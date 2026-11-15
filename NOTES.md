@@ -70,14 +70,15 @@ Regras:
 
 ## 4. Correção e tolerância
 
-| Comparação | Resultado | Observação |
-|---|---|---|
-| Ref vs (a) — `cp_average.txt` | *(preencher com `diff`)* | |
-| Ref vs (a) — última linha de `cp_output.txt` | *(preencher)* | |
+| Ref vs (a) — cp_average.txt | Idêntico | diff vazio |
+| Ref vs (a) — cp_output.txt | 119/201 linhas diferem a partir do passo 79 | erro rel. máx.: T 0, KE 0, P 2.6e-14, PE 1.9e-13, Etot 2.3e-13 |
 
-Tolerância proposta: *(ex.: erro relativo ≤ … nas energias, T e P)*
-Justificação: diferenças de arredondamento por `-O3 -ffast-math` (reordenação de somas), não por data races (PL05).
-Nota: resultados repetíveis não provam ausência de data races; rever também o código.
+Diferenças no último dígito impresso (PE ≈ 5e4 com 8 casas → resolução ≈ 2e-13):
+arredondamento por reordenação das somas (psum, Pot) com -ffast-math, não erro (PL05).
+
+Tolerância proposta: T, KE, PE, Etot por passo e T médio ≤ 1e-6 relativo; P médio ≤ 1e-4;
+P por passo informativo (colisões com paredes são eventos discretos).
+Margem acima de 1e-13 porque as versões OpenMP reordenam somas maiores e a dinâmica amplifica diferenças.
 
 ---
 
