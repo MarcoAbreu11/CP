@@ -155,4 +155,5 @@ Saídas: profiling/perf/, profiling/scorep/, profiling/scaleN/
 f ≈ 0.9998 → Smax(12) = 11.97 · Smax(24) = 23.89 · Smax(48) = 47.5.
 Amdahl não é o limite; desvios reais vêm de sincronização (a[j]), desequilíbrio (ciclo triangular) e memória (PL06).
 Recalcular f após a seq_opt.
+
 ---
