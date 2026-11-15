@@ -3,4 +3,4 @@
 /cp_*
 results/
 perf.data*
-scorep-*
+scorep-*tmp_*/
