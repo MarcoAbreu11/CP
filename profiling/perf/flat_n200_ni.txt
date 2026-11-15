@@ -1,0 +1,47 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 2K of event 'cycles'
+# Event count (approx.): 1067510332
+#
+# Overhead       Samples  Shared Object      Symbol                                IPC   [IPC Coverage]
+# ........  ............  .................  ....................................  ....................
+#
+    65.26%          1405  md200_ni           [.] Potential                         -      -            
+    15.74%           339  md200_ni           [.] computeAccelerations              -      -            
+    15.51%           335  md200_ni           [.] std::pow<double, int>             -      -            
+     2.12%            46  md200_ni           [.] std::pow<double, int>             -      -            
+     0.09%             2  md200_ni           [.] VelocityVerlet                    -      -            
+     0.09%             2  libc-2.28.so       [.] __GI___printf_fp_l                -      -            
+     0.08%             1  [kernel.kallsyms]  [k] kmem_cache_alloc                  -      -            
+     0.07%             1  [ptlrpc]           [k] ldlm_lock_remove_from_lru_nolock  -      -            
+     0.07%             1  [lustre]           [k] ll_inode_permission               -      -            
+     0.07%             1  [kernel.kallsyms]  [k] alloc_empty_file                  -      -            
+     0.06%             1  [kernel.kallsyms]  [k] link_path_walk                    -      -            
+     0.06%             1  ld-2.28.so         [.] do_lookup_x                       -      -            
+     0.06%             1  [kernel.kallsyms]  [k] _atomic_dec_and_lock              -      -            
+     0.06%             1  [obdclass]         [k] lprocfs_counter_add               -      -            
+     0.06%             1  [libcfs]           [k] cfs_hash_bd_get                   -      -            
+     0.05%             1  [kernel.kallsyms]  [k] __wake_up                         -      -            
+     0.05%             1  [ptlrpc]           [k] ldlm_prepare_lru_list             -      -            
+     0.05%             1  [obdclass]         [k] lu_object_locate                  -      -            
+     0.05%             1  libc-2.28.so       [.] hack_digit                        -      -            
+     0.05%             1  [ptlrpc]           [k] ldlm_res_hop_get_locked           -      -            
+     0.05%             1  [kernel.kallsyms]  [k] refill_obj_stock                  -      -            
+     0.05%             1  libc-2.28.so       [.] _IO_file_xsputn@@GLIBC_2.17       -      -            
+     0.04%             1  [lnet]             [k] lnet_find_peer_ni_locked          -      -            
+     0.04%             1  [kernel.kallsyms]  [k] memset                            -      -            
+     0.04%             1  [lnet]             [k] lnet_get_net_locked               -      -            
+     0.04%             1  [ptlrpc]           [k] __ptlrpc_req_finished             -      -            
+     0.04%             1  [ptlrpc]           [k] ldlm_lock_add_to_lru              -      -            
+     0.04%             1  [kernel.kallsyms]  [k] handle_mm_fault                   -      -            
+     0.02%             1  [kernel.kallsyms]  [k] __wake_up_common_lock             -      -            
+     0.00%             1  [kernel.kallsyms]  [k] memcpy                            -      -            
+     0.00%             7  [kernel.kallsyms]  [k] perf_event_exec                   -      -            
+
+
+#
+# (Tip: Order by the overhead of source file name and line number: perf report -s srcline)
+#

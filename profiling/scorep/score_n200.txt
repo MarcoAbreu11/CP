@@ -1,0 +1,22 @@
+
+Estimated aggregate size of event trace:                   38kB
+Estimated requirements for largest trace buffer (max_buf): 38kB
+Estimated memory requirements (SCOREP_TOTAL_MEMORY):       4097kB
+(hint: When tracing set SCOREP_TOTAL_MEMORY=4097kB to avoid intermediate flushes
+ or reduce requirements using USR regions filters.)
+
+flt     type max_buf[B] visits time[s] time[%] time/visit[us]  region
+         ALL     38,657  1,610    0.55   100.0         340.01  ALL
+         USR     38,616  1,609    0.53    97.0         329.91  USR
+      SCOREP         41      1    0.02     3.0       16589.89  SCOREP
+
+         USR     14,400    600    0.00     0.0           0.39  double gaussdist()
+         USR      4,848    202    0.18    32.1         869.47  void computeAccelerations()
+         USR      4,824    201    0.00     0.0           0.76  double MeanSquaredVelocity()
+         USR      4,824    201    0.00     0.0           0.74  double Kinetic()
+         USR      4,824    201    0.35    63.1        1717.21  double Potential()
+         USR      4,824    201    0.00     0.1           3.89  double VelocityVerlet(double, int, FILE*)
+      SCOREP         41      1    0.02     3.0       16589.89  md200_sp
+         USR         24      1    0.00     0.0         133.98  void initializeVelocities()
+         USR         24      1    0.00     0.0          13.32  void initialize()
+         USR         24      1    0.01     1.6        8575.72  int main()

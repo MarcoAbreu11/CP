@@ -1,0 +1,306 @@
+ Percent |	Source code & Disassembly of md5000 for cycles (19 samples, percent: local period)
+--------------------------------------------------------------------------------------------------
+         :
+         :
+         :
+         :            Disassembly of section .text:
+         :
+         :            0000000000401960 <VelocityVerlet(double, int, _IO_FILE*)>:
+         :            VelocityVerlet(double, int, _IO_FILE*):
+         :            }
+         :            }
+         :            }
+         :
+         :            // returns sum of dv/dt*m/A (aka Pressure) from elastic collisions with walls
+         :            double VelocityVerlet(double dt, int iter, FILE *fp) {
+    0.00 :   401960: stp     x29, x30, [sp, #-16]!
+         :            //  Compute accelerations from forces at current position
+         :            // this call was removed (commented) for predagogical reasons
+         :            //computeAccelerations();
+         :            //  Update positions and velocity with current velocity and acceleration
+         :            //printf("  Updated Positions!\n");
+         :            for (i=0; i<N; i++) {
+    0.00 :   401964: adrp    x0, 420000 <exit@GLIBC_2.17>
+    0.00 :   401968: add     x15, x0, #0xe0
+         :            double VelocityVerlet(double dt, int iter, FILE *fp) {
+    0.00 :   40196c: mov     x29, sp
+         :            for (i=0; i<N; i++) {
+    0.00 :   401970: ldr     w13, [x0, #224]
+    0.00 :   401974: cmp     w13, #0x0
+    0.00 :   401978: b.le    401c2c <VelocityVerlet(double, int, _IO_FILE*)+0x2cc>
+    0.00 :   40197c: fmov    d18, d0
+    0.00 :   401980: cmp     w13, #0x1
+    0.00 :   401984: b.eq    401c50 <VelocityVerlet(double, int, _IO_FILE*)+0x2f0>  // b.none
+         :            for (j=0; j<3; j++) {
+         :            r[i][j] += v[i][j]*dt + 0.5*a[i][j]*dt*dt;
+    0.00 :   401988: fmov    d17, #5.000000000000000000e-01
+    0.00 :   40198c: adrp    x1, 477000 <v+0x1c520>
+    0.00 :   401990: lsr     w12, w13, #1
+    0.00 :   401994: add     x11, x1, #0xfc0
+    0.00 :   401998: fmul    d17, d0, d17
+    0.00 :   40199c: mov     w3, #0x30                       // #48
+    0.00 :   4019a0: adrp    x0, 45a000 <a+0x1ca00>
+    0.00 :   4019a4: adrp    x14, 43d000 <F+0x1cee0>
+    0.00 :   4019a8: add     x10, x0, #0xae0
+    0.00 :   4019ac: add     x14, x14, #0x600
+    0.00 :   4019b0: umaddl  x3, w12, w3, x11
+    0.00 :   4019b4: mov     x0, x11
+    0.00 :   4019b8: dup     v19.2d, v17.d[0]
+    0.00 :   4019bc: mov     x1, x10
+    0.00 :   4019c0: mov     x2, x14
+    0.00 :   4019c4: ldr     q24, [x2, #32]
+    0.00 :   4019c8: ldp     q30, q29, [x1]
+    0.00 :   4019cc: add     x1, x1, #0x30
+    0.00 :   4019d0: ldp     q25, q23, [x2], #48
+    0.00 :   4019d4: ldr     q28, [x0, #32]
+    0.00 :   4019d8: ldp     q27, q26, [x0]
+    0.00 :   4019dc: add     x0, x0, #0x30
+    0.00 :   4019e0: fmla    v29.2d, v23.2d, v19.2d
+    5.26 :   4019e4: fmla    v30.2d, v25.2d, v19.2d
+    0.00 :   4019e8: ldur    q31, [x1, #-16]
+    5.26 :   4019ec: fmla    v26.2d, v29.2d, v18.d[0]
+         :
+         :            v[i][j] += 0.5*a[i][j]*dt;
+   10.53 :   4019f0: stp     q30, q29, [x1, #-48]
+         :            r[i][j] += v[i][j]*dt + 0.5*a[i][j]*dt*dt;
+    0.00 :   4019f4: mov     v29.16b, v28.16b
+    0.00 :   4019f8: mov     v28.16b, v27.16b
+    0.00 :   4019fc: fmla    v31.2d, v24.2d, v19.2d
+    5.26 :   401a00: fmla    v28.2d, v30.2d, v18.d[0]
+    0.00 :   401a04: fmla    v29.2d, v31.2d, v18.d[0]
+    5.26 :   401a08: stp     q28, q26, [x0, #-48]
+         :            v[i][j] += 0.5*a[i][j]*dt;
+    5.26 :   401a0c: stur    q31, [x1, #-16]
+         :            r[i][j] += v[i][j]*dt + 0.5*a[i][j]*dt*dt;
+    0.00 :   401a10: stur    q29, [x0, #-16]
+         :            for (i=0; i<N; i++) {
+    0.00 :   401a14: cmp     x0, x3
+    0.00 :   401a18: b.ne    4019c4 <VelocityVerlet(double, int, _IO_FILE*)+0x64>  // b.any
+    0.00 :   401a1c: and     w2, w13, #0xfffffffe
+    0.00 :   401a20: tbz     w13, #0, 401c24 <VelocityVerlet(double, int, _IO_FILE*)+0x2c4>
+         :            r[i][j] += v[i][j]*dt + 0.5*a[i][j]*dt*dt;
+    0.00 :   401a24: fmov    v30.2d, #5.000000000000000000e-01
+    0.00 :   401a28: sbfiz   x0, x2, #1, #32
+    0.00 :   401a2c: add     x0, x0, w2, sxtw
+    0.00 :   401a30: lsl     x0, x0, #3
+    0.00 :   401a34: fmul    d17, d18, d30
+    0.00 :   401a38: add     x3, x14, x0
+    0.00 :   401a3c: fmul    v30.2d, v30.2d, v18.d[0]
+    0.00 :   401a40: add     x2, x10, x0
+    0.00 :   401a44: ldr     q29, [x11, x0]
+    0.00 :   401a48: add     x1, x11, x0
+    0.00 :   401a4c: ldr     q28, [x14, x0]
+    0.00 :   401a50: ldr     q31, [x10, x0]
+    0.00 :   401a54: dup     v19.2d, v17.d[0]
+    0.00 :   401a58: fmla    v31.2d, v30.2d, v28.2d
+    0.00 :   401a5c: mov     v30.16b, v29.16b
+    0.00 :   401a60: fmla    v30.2d, v31.2d, v18.d[0]
+    0.00 :   401a64: str     q30, [x11, x0]
+         :            v[i][j] += 0.5*a[i][j]*dt;
+    0.00 :   401a68: str     q31, [x10, x0]
+         :            r[i][j] += v[i][j]*dt + 0.5*a[i][j]*dt*dt;
+    0.00 :   401a6c: ldr     d29, [x3, #16]
+    0.00 :   401a70: ldr     d31, [x2, #16]
+    0.00 :   401a74: ldr     d30, [x1, #16]
+    0.00 :   401a78: fmadd   d31, d29, d17, d31
+    0.00 :   401a7c: fmadd   d30, d31, d18, d30
+         :            v[i][j] += 0.5*a[i][j]*dt;
+    0.00 :   401a80: str     d31, [x2, #16]
+         :            r[i][j] += v[i][j]*dt + 0.5*a[i][j]*dt*dt;
+    0.00 :   401a84: str     d30, [x1, #16]
+         :            }
+         :            //printf("  %i  %6.4e   %6.4e   %6.4e\n",i,r[i][0],r[i][1],r[i][2]);
+         :            }
+         :            //  Update accellerations from updated positions
+         :            computeAccelerations();
+    0.00 :   401a88: bl      4017d0 <computeAccelerations()>
+         :            //  Update velocity with updated acceleration
+         :            for (i=0; i<N; i++) {
+    0.00 :   401a8c: cmp     w13, #0x1
+    0.00 :   401a90: b.eq    401c48 <VelocityVerlet(double, int, _IO_FILE*)+0x2e8>  // b.none
+    0.00 :   401a94: lsr     w12, w13, #1
+    0.00 :   401a98: mov     w2, #0x30                       // #48
+    0.00 :   401a9c: mov     x0, x10
+    0.00 :   401aa0: mov     x1, x14
+    0.00 :   401aa4: umaddl  x2, w12, w2, x10
+         :            for (j=0; j<3; j++) {
+         :            v[i][j] += 0.5*a[i][j]*dt;
+    5.26 :   401aa8: ldr     q27, [x1, #32]
+    0.00 :   401aac: ldr     q31, [x0, #32]
+    0.00 :   401ab0: ldp     q30, q29, [x0]
+    0.00 :   401ab4: add     x0, x0, #0x30
+   10.53 :   401ab8: ldp     q28, q26, [x1], #48
+    0.00 :   401abc: fmla    v31.2d, v27.2d, v19.2d
+    5.26 :   401ac0: fmla    v29.2d, v26.2d, v19.2d
+    0.00 :   401ac4: fmla    v30.2d, v28.2d, v19.2d
+    0.00 :   401ac8: stur    q31, [x0, #-16]
+    0.00 :   401acc: stp     q30, q29, [x0, #-48]
+    0.00 :   401ad0: cmp     x0, x2
+    0.00 :   401ad4: b.ne    401aa8 <VelocityVerlet(double, int, _IO_FILE*)+0x148>  // b.any
+    0.00 :   401ad8: and     w0, w13, #0xfffffffe
+    0.00 :   401adc: tbz     w13, #0, 401b14 <VelocityVerlet(double, int, _IO_FILE*)+0x1b4>
+    0.00 :   401ae0: sbfiz   x1, x0, #1, #32
+    0.00 :   401ae4: add     x0, x1, w0, sxtw
+    0.00 :   401ae8: lsl     x0, x0, #3
+    0.00 :   401aec: add     x2, x14, x0
+    0.00 :   401af0: add     x1, x10, x0
+    0.00 :   401af4: ldr     q30, [x14, x0]
+    0.00 :   401af8: ldr     q31, [x10, x0]
+    0.00 :   401afc: fmla    v31.2d, v30.2d, v19.2d
+    0.00 :   401b00: str     q31, [x10, x0]
+    0.00 :   401b04: ldr     d30, [x2, #16]
+    0.00 :   401b08: ldr     d31, [x1, #16]
+    0.00 :   401b0c: fmadd   d31, d30, d17, d31
+    0.00 :   401b10: str     d31, [x1, #16]
+         :            // Elastic walls
+         :            for (i=0; i<N; i++) {
+         :            for (j=0; j<3; j++) {
+         :            if (r[i][j]<0.) {
+         :            v[i][j] *=-1.; //- elastic walls
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls
+    0.00 :   401b14: adrp    x1, 420000 <exit@GLIBC_2.17>
+    0.00 :   401b18: mov     w2, #0x18                       // #24
+         :            double psum = 0.;
+    0.00 :   401b1c: movi    d31, #0x0
+         :            }
+         :            if (r[i][j]>=L) {
+    0.00 :   401b20: ldr     d30, [x15, #8]
+    0.00 :   401b24: ldr     d29, [x1, #152]
+    0.00 :   401b28: umaddl  x2, w13, w2, x10
+    0.00 :   401b2c: mov     x0, x10
+    0.00 :   401b30: mov     x1, x11
+    0.00 :   401b34: fadd    d29, d29, d29
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls
+    0.00 :   401b38: fdiv    d29, d29, d18
+    0.00 :   401b3c: nop
+         :            if (r[i][j]<0.) {
+    0.00 :   401b40: ldr     d28, [x1]
+    5.26 :   401b44: fcmpe   d28, #0.0
+    0.00 :   401b48: b.ge    401b60 <VelocityVerlet(double, int, _IO_FILE*)+0x200>  // b.tcont
+         :            v[i][j] *=-1.; //- elastic walls
+    0.00 :   401b4c: ldr     d27, [x0]
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls
+    0.00 :   401b50: fabs    d26, d27
+         :            v[i][j] *=-1.; //- elastic walls
+    0.00 :   401b54: fneg    d27, d27
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls
+    0.00 :   401b58: fmadd   d31, d26, d29, d31
+         :            v[i][j] *=-1.; //- elastic walls
+    0.00 :   401b5c: str     d27, [x0]
+         :            if (r[i][j]>=L) {
+    5.26 :   401b60: fcmpe   d28, d30
+    0.00 :   401b64: b.mi    401b7c <VelocityVerlet(double, int, _IO_FILE*)+0x21c>  // b.first
+         :            v[i][j]*=-1.;  //- elastic walls
+    0.00 :   401b68: ldr     d28, [x0]
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "right" walls
+    0.00 :   401b6c: fabs    d27, d28
+         :            v[i][j]*=-1.;  //- elastic walls
+    0.00 :   401b70: fneg    d28, d28
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "right" walls
+    0.00 :   401b74: fmadd   d31, d27, d29, d31
+         :            v[i][j]*=-1.;  //- elastic walls
+    0.00 :   401b78: str     d28, [x0]
+         :            if (r[i][j]<0.) {
+    5.26 :   401b7c: ldr     d28, [x1, #8]
+    0.00 :   401b80: fcmpe   d28, #0.0
+    0.00 :   401b84: b.ge    401b9c <VelocityVerlet(double, int, _IO_FILE*)+0x23c>  // b.tcont
+         :            v[i][j] *=-1.; //- elastic walls
+    0.00 :   401b88: ldr     d27, [x0, #8]
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls
+    0.00 :   401b8c: fabs    d26, d27
+         :            v[i][j] *=-1.; //- elastic walls
+    0.00 :   401b90: fneg    d27, d27
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls
+    0.00 :   401b94: fmadd   d31, d26, d29, d31
+         :            v[i][j] *=-1.; //- elastic walls
+    0.00 :   401b98: str     d27, [x0, #8]
+         :            if (r[i][j]>=L) {
+    0.00 :   401b9c: fcmpe   d28, d30
+    0.00 :   401ba0: b.mi    401bb8 <VelocityVerlet(double, int, _IO_FILE*)+0x258>  // b.first
+         :            v[i][j]*=-1.;  //- elastic walls
+    0.00 :   401ba4: ldr     d28, [x0, #8]
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "right" walls
+    0.00 :   401ba8: fabs    d27, d28
+         :            v[i][j]*=-1.;  //- elastic walls
+    0.00 :   401bac: fneg    d28, d28
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "right" walls
+    0.00 :   401bb0: fmadd   d31, d27, d29, d31
+         :            v[i][j]*=-1.;  //- elastic walls
+    0.00 :   401bb4: str     d28, [x0, #8]
+         :            if (r[i][j]<0.) {
+    0.00 :   401bb8: ldr     d28, [x1, #16]
+   10.53 :   401bbc: fcmpe   d28, #0.0
+   10.53 :   401bc0: b.ge    401bd8 <VelocityVerlet(double, int, _IO_FILE*)+0x278>  // b.tcont
+         :            v[i][j] *=-1.; //- elastic walls
+    0.00 :   401bc4: ldr     d27, [x0, #16]
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls
+    0.00 :   401bc8: fabs    d26, d27
+         :            v[i][j] *=-1.; //- elastic walls
+    0.00 :   401bcc: fneg    d27, d27
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls
+    0.00 :   401bd0: fmadd   d31, d26, d29, d31
+         :            v[i][j] *=-1.; //- elastic walls
+    0.00 :   401bd4: str     d27, [x0, #16]
+         :            if (r[i][j]>=L) {
+    0.00 :   401bd8: fcmpe   d28, d30
+    0.00 :   401bdc: b.mi    401bf4 <VelocityVerlet(double, int, _IO_FILE*)+0x294>  // b.first
+         :            v[i][j]*=-1.;  //- elastic walls
+    0.00 :   401be0: ldr     d28, [x0, #16]
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "right" walls
+    0.00 :   401be4: fabs    d27, d28
+         :            v[i][j]*=-1.;  //- elastic walls
+    0.00 :   401be8: fneg    d28, d28
+         :            psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "right" walls
+    0.00 :   401bec: fmadd   d31, d27, d29, d31
+         :            v[i][j]*=-1.;  //- elastic walls
+    0.00 :   401bf0: str     d28, [x0, #16]
+         :            for (i=0; i<N; i++) {
+    0.00 :   401bf4: add     x0, x0, #0x18
+    0.00 :   401bf8: add     x1, x1, #0x18
+    0.00 :   401bfc: cmp     x0, x2
+    5.26 :   401c00: b.ne    401b40 <VelocityVerlet(double, int, _IO_FILE*)+0x1e0>  // b.any
+         :            }
+         :            fprintf(fp,"\n");
+         :            }*/
+         :            //fprintf(fp,"\n \n");
+         :
+         :            return psum/(6*L*L);
+    0.00 :   401c04: mov     x0, #0x5555555555555555         // #6148914691236517205
+    0.00 :   401c08: fmul    d30, d30, d30
+    0.00 :   401c0c: movk    x0, #0x3fc5, lsl #48
+    0.00 :   401c10: fmov    d29, x0
+         :            }
+    0.00 :   401c14: ldp     x29, x30, [sp], #16
+         :            return psum/(6*L*L);
+    0.00 :   401c18: fmul    d31, d31, d29
+         :            }
+    0.00 :   401c1c: fdiv    d0, d31, d30
+    0.00 :   401c20: ret
+         :            computeAccelerations();
+    0.00 :   401c24: bl      4017d0 <computeAccelerations()>
+         :            for (i=0; i<N; i++) {
+    0.00 :   401c28: b       401a98 <VelocityVerlet(double, int, _IO_FILE*)+0x138>
+         :            computeAccelerations();
+    0.00 :   401c2c: bl      4017d0 <computeAccelerations()>
+         :            return psum/(6*L*L);
+    0.00 :   401c30: ldr     d30, [x15, #8]
+    0.00 :   401c34: movi    d31, #0x0
+         :            }
+    0.00 :   401c38: ldp     x29, x30, [sp], #16
+         :            return psum/(6*L*L);
+    0.00 :   401c3c: fmul    d30, d30, d30
+         :            }
+    0.00 :   401c40: fdiv    d0, d31, d30
+    0.00 :   401c44: ret
+         :            for (i=0; i<N; i++) {
+    0.00 :   401c48: mov     w0, #0x0                        // #0
+    0.00 :   401c4c: b       401ae0 <VelocityVerlet(double, int, _IO_FILE*)+0x180>
+    0.00 :   401c50: adrp    x1, 477000 <v+0x1c520>
+    0.00 :   401c54: adrp    x0, 45a000 <a+0x1ca00>
+    0.00 :   401c58: adrp    x14, 43d000 <F+0x1cee0>
+    0.00 :   401c5c: add     x11, x1, #0xfc0
+    0.00 :   401c60: add     x10, x0, #0xae0
+    0.00 :   401c64: add     x14, x14, #0x600
+         :            for (i=0; i<N; i++) {
+    0.00 :   401c68: mov     w2, #0x0                        // #0
+    0.00 :   401c6c: b       401a24 <VelocityVerlet(double, int, _IO_FILE*)+0xc4>

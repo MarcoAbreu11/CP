@@ -1,0 +1,38 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 326K of event 'cycles'
+# Event count (approx.): 652115285313
+#
+# Overhead       Samples  Shared Object      Symbol                            IPC   [IPC Coverage]
+# ........  ............  .................  ................................  ....................
+#
+    66.55%        217523  md5000             [.] Potential                     -      -            
+    33.43%        109266  md5000             [.] computeAccelerations          -      -            
+     0.01%            26  [kernel.kallsyms]  [k] __softirqentry_text_start     -      -            
+     0.01%            19  md5000             [.] VelocityVerlet                -      -            
+     0.00%            11  [kernel.kallsyms]  [k] note_gp_changes               -      -            
+     0.00%             8  md5000             [.] main                          -      -            
+     0.00%             5  [kernel.kallsyms]  [k] rcu_core                      -      -            
+     0.00%             1  [kernel.kallsyms]  [k] kmem_cache_free               -      -            
+     0.00%             2  [kernel.kallsyms]  [k] rcu_report_qs_rnp             -      -            
+     0.00%             1  [kernel.kallsyms]  [k] alloc_iova_fast               -      -            
+     0.00%             1  [kernel.kallsyms]  [k] idle_cpu                      -      -            
+     0.00%             1  [kernel.kallsyms]  [k] find_busiest_group            -      -            
+     0.00%             1  [kernel.kallsyms]  [k] __call_rcu                    -      -            
+     0.00%             1  [kernel.kallsyms]  [k] fsnotify                      -      -            
+     0.00%             1  libc-2.28.so       [.] hack_digit                    -      -            
+     0.00%             1  [kernel.kallsyms]  [k] arm_smmu_iotlb_sync           -      -            
+     0.00%             1  libc-2.28.so       [.] __mpn_divrem                  -      -            
+     0.00%             1  libc-2.28.so       [.] __GI___printf_fp_l            -      -            
+     0.00%             1  libc-2.28.so       [.] __mpn_rshift                  -      -            
+     0.00%             1  [kernel.kallsyms]  [k] security_vm_enough_memory_mm  -      -            
+     0.00%             1  [kernel.kallsyms]  [k] perf_output_begin             -      -            
+     0.00%             5  [kernel.kallsyms]  [k] perf_event_exec               -      -            
+
+
+#
+# (Tip: Use parent filter to see specific call path: perf report -p <regex>)
+#

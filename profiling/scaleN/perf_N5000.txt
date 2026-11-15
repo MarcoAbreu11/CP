@@ -1,0 +1,14 @@
+
+ Performance counter stats for 'sh -c ./md_a < ../inputdata.txt > /dev/null' (5 runs):
+
+        325,218.12 msec task-clock                #    1.000 CPUs utilized            ( +-  0.00% )
+                55      context-switches          #    0.000 K/sec                    ( +-  6.10% )
+                 0      cpu-migrations            #    0.000 K/sec                    ( +- 61.24% )
+               162      page-faults               #    0.000 K/sec                    ( +-  0.12% )
+   650,435,436,131      cycles                    #    2.000 GHz                      ( +-  0.00% )
+   216,822,088,636      instructions              #    0.33  insn per cycle           ( +-  0.00% )
+   <not supported>      branches                                                    
+         4,015,008      branch-misses                                                 ( +-  0.13% )
+
+         325.24450 +- 0.00540 seconds time elapsed  ( +-  0.00% )
+

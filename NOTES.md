@@ -70,8 +70,6 @@ Regras:
 
 ## 4. Correção e tolerância
 
-## 4. Correção e tolerância
-
 | Comparação | Resultado | Observação |
 |---|---|---|
 | Ref vs (a) — `cp_average.txt` | Idêntico | `diff` vazio |
@@ -118,4 +116,43 @@ paste reference/full/cp_output.txt results/a/cp_output.txt | awk 'NR>1{
 | 15/11 | | smoke | 5000 | 1 | Makefile | *(T)* | — | teste de execução |
 | 15/11 | | (a) | 5000 | — | -O3 -ffast-math | *(média ± desvio)* | ref | perf stat -r 5 |
 
+---
+## 6. Profiling inicial (código original, flags da baseline (a): -O3 -ffast-math)
+
+Comandos: scripts/prof_perf.sh, scripts/prof_scorep.sh, scripts/scale_n.sh
+Saídas: profiling/perf/, profiling/scorep/, profiling/scaleN/
+
+### Ranking
+| Função | perf N=200 | perf N=5000 | Score-P N=5000 | Visits | Tempo/chamada |
+|---|---|---|---|---|---|
+| Potential | 65.4% | 66.6% | 66.5% (216.4 s) | 201 | 1.077 s |
+| computeAccelerations | 33.4% | 33.4% | 33.4% (108.8 s) | 202 | 0.538 s |
+| VelocityVerlet (parte O(N)) | 0.14% | 0.01% | 0.0% | 201 | 86 µs |
+| Kinetic + MeanSquaredVelocity | — | — | 0.0% | 201+201 | ~12 µs |
+| Resto | — | ~0.01% | 0.0% | — | — |
+
+- Os dois ciclos O(N²) = 99.98% do tempo. Score-P total 325.21 s ≈ perf stat 325.24 s (overhead desprezável).
+- Custo por par igual nas duas funções: ~43 ns ≈ 86 ciclos. Potential pesa 2× porque percorre 2× os pares (ciclo completo, N(N−1)).
+
+### -O2 vs (a)
+- -O2: ~95% do tempo na libm (__pow_finite 67%, __exp1 26.5%, __pow + pow@plt ~2%).
+- (a): as chamadas a pow desaparecem (-ffast-math → multiplicações). Ciclos 11.05e9 → 1.06e9 = 10.4×.
+
+### Dentro de Potential (perf annotate, N=5000)
+- Cadeia dependente: fsub/fmadd (r²) → fsqrt → fdiv (sigma/rnorm) → fmul ×4 (quot², ³, ⁶, ¹²) → fsub/fmadd (Pot).
+- A 1.ª fmul após o fdiv acumula 30% das amostras: espera pela latência de fsqrt + fdiv.
+- O ciclo está limitado pela latência das operações dependentes → explica CPI ≈ 3 (IPC 0.33).
+
+### Complexidade
+| N | Tempo (s) | Razão | Esperado O(N²) |
+|---|---|---|---|
+| 200 | 0.545 | — | — |
+| 1000 | 13.05 | 23.9 | 25 |
+| 2000 | 52.12 | 3.99 | 4 |
+| 5000 | 325.24 | 6.24 | 6.25 |
+
+### Amdahl (código original)
+f ≈ 0.9998 → Smax(12) = 11.97 · Smax(24) = 23.89 · Smax(48) = 47.5.
+Amdahl não é o limite; desvios reais vêm de sincronização (a[j]), desequilíbrio (ciclo triangular) e memória (PL06).
+Recalcular f após a seq_opt.
 ---

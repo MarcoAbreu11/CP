@@ -1,0 +1,53 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 2K of event 'cycles'
+# Event count (approx.): 1063835238
+#
+# Overhead       Samples  Command  Shared Object      Symbol                           
+# ........  ............  .......  .................  .................................
+#
+    65.38%          1402  md200    md200              [.] Potential
+            |
+            ---Potential
+               __libc_start_main
+               _start
+
+    33.35%           715  md200    md200              [.] computeAccelerations
+            |
+            ---computeAccelerations
+               |          
+                --33.20%--main
+                          __libc_start_main
+                          _start
+
+     0.14%             3  md200    md200              [.] VelocityVerlet
+     0.09%             2  md200    libc-2.28.so       [.] __mpn_divrem
+     0.08%             1  md200    [kernel.kallsyms]  [k] link_path_walk
+     0.07%             1  md200    [lustre]           [k] ll_inode_permission
+     0.07%             1  md200    [kernel.kallsyms]  [k] __call_rcu
+     0.07%             1  md200    [kernel.kallsyms]  [k] strncpy_from_user
+     0.07%             1  md200    [obdclass]         [k] lprocfs_counter_add
+     0.06%             1  md200    libc-2.28.so       [.] _dl_addr
+     0.06%             1  md200    [ptlrpc]           [k] req_capsule_set_size
+     0.06%             1  md200    libm-2.28.so       [.] __log_finite
+     0.05%             1  md200    [kernel.kallsyms]  [k] __wake_up_common_lock
+     0.05%             1  md200    libc-2.28.so       [.] __printf_fp
+     0.05%             1  md200    [obdclass]         [k] cl_page_disown0
+     0.05%             1  md200    libc-2.28.so       [.] __mpn_mul_1
+     0.05%             1  md200    libc-2.28.so       [.] __libc_alloca_cutoff
+     0.05%             1  md200    libc-2.28.so       [.] __mpn_mul
+     0.05%             1  md200    [kernel.kallsyms]  [k] format_decode
+     0.05%             1  md200    [libcfs]           [k] cfs_block_sigsinv
+     0.05%             1  md200    libc-2.28.so       [.] __strchrnul
+     0.04%             1  md200    [kernel.kallsyms]  [k] mark_page_accessed
+     0.02%             1  md200    [kernel.kallsyms]  [k] __arch_clear_user
+     0.00%             1  md200    [kernel.kallsyms]  [k] perf_iterate_ctx.constprop.74
+     0.00%             7  perf     [kernel.kallsyms]  [k] perf_event_exec
+
+
+#
+# (Tip: Treat branches as callchains: perf report --branch-history)
+#

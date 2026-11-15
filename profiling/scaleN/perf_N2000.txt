@@ -1,0 +1,14 @@
+
+ Performance counter stats for 'sh -c ./md_2000 < ../inputdata.txt > /dev/null' (3 runs):
+
+         52,113.74 msec task-clock                #    1.000 CPUs utilized            ( +-  0.08% )
+                76      context-switches          #    0.001 K/sec                    ( +- 38.43% )
+                 0      cpu-migrations            #    0.000 K/sec                  
+               161      page-faults               #    0.003 K/sec                  
+   104,226,921,263      cycles                    #    2.000 GHz                      ( +-  0.08% )
+    34,738,782,993      instructions              #    0.33  insn per cycle           ( +-  0.08% )
+   <not supported>      branches                                                    
+         1,695,888      branch-misses                                                 ( +-  7.88% )
+
+           52.1246 +- 0.0445 seconds time elapsed  ( +-  0.09% )
+
