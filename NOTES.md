@@ -70,15 +70,44 @@ Regras:
 
 ## 4. Correção e tolerância
 
-| Ref vs (a) — cp_average.txt | Idêntico | diff vazio |
-| Ref vs (a) — cp_output.txt | 119/201 linhas diferem a partir do passo 79 | erro rel. máx.: T 0, KE 0, P 2.6e-14, PE 1.9e-13, Etot 2.3e-13 |
+## 4. Correção e tolerância
 
-Diferenças no último dígito impresso (PE ≈ 5e4 com 8 casas → resolução ≈ 2e-13):
-arredondamento por reordenação das somas (psum, Pot) com -ffast-math, não erro (PL05).
+| Comparação | Resultado | Observação |
+|---|---|---|
+| Ref vs (a) — `cp_average.txt` | Idêntico | `diff` vazio |
+| Ref vs (a) — `cp_output.txt` | 119/201 linhas diferem, a partir do passo 79 | Erro relativo máximo: T 0 · KE 0 · P 2.6e-14 · PE 1.9e-13 · Etot 2.3e-13 |
 
-Tolerância proposta: T, KE, PE, Etot por passo e T médio ≤ 1e-6 relativo; P médio ≤ 1e-4;
-P por passo informativo (colisões com paredes são eventos discretos).
-Margem acima de 1e-13 porque as versões OpenMP reordenam somas maiores e a dinâmica amplifica diferenças.
+Interpretação:
+- As diferenças estão no último dígito impresso (PE ≈ 5e4 com 8 casas decimais → resolução ≈ 2e-13).
+- Resultam da reordenação das somas `psum` (pressão) e `Pot` (energia potencial) com `-O3 -ffast-math`.
+- São erros de arredondamento aceitáveis, não erros de execução (PL05).
+
+Tolerância proposta (a confirmar com o E2):
+
+| O que comparar | Tolerância relativa |
+|---|---|
+| `cp_output.txt` — T, KE, PE, Etot (por passo) | ≤ 1e-6 |
+| `cp_output.txt` — P (por passo) | Só informativo |
+| `cp_average.txt` — T médio e PV/nT | ≤ 1e-6 |
+| `cp_average.txt` — P médio | ≤ 1e-4 |
+
+Justificação:
+- Margem acima dos 1e-13 observados, porque as versões OpenMP reordenam somas maiores
+  (≈25 M termos em `Potential` por passo) e a dinâmica amplifica pequenas diferenças ao longo dos passos.
+- A pressão por passo depende de colisões com as paredes (eventos discretos): um átomo que bate
+  um passo mais cedo altera P nesse passo, mesmo com código correto. Por isso compara-se a média.
+
+Critério de validação das versões OpenMP:
+- Testar com 1, 2, 4, 8, 16 e 48 threads e repetir cada configuração várias vezes.
+- Diferenças pequenas, estáveis e dentro da tolerância → arredondamento (aceitável).
+- Diferenças grandes, ou que mudam de execução para execução → suspeita de data race.
+- Resultados repetíveis não provam ausência de data races: rever também o código
+  (escritas em `a[j]`, somas partilhadas, variáveis temporárias privadas).
+
+Comando usado para medir o erro relativo máximo por coluna:
+paste reference/full/cp_output.txt results/a/cp_output.txt | awk 'NR>1{
+  for(c=2;c<=6;c++){a=$c;b=$(c+6);d=a-b;if(d<0)d=-d;s=(a<0?-a:a);r=(s>0)?d/s:d;if(r>m[c])m[c]=r}}
+  END{split("T P KE PE Etot",n," ");for(c=2;c<=6;c++)printf "%-5s max rel = %.3e\n",n[c-1],m[c]}'
 
 ---
 
