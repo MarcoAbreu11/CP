@@ -57,6 +57,8 @@ double v[MAXPART][3];
 double a[MAXPART][3];
 //  Force
 double F[MAXPART][3];
+//  Total potential energy, computed in computeAccelerations
+double Epot;
 
 // atom type
 char atype[10];
@@ -69,13 +71,12 @@ void initialize();
 double VelocityVerlet(double dt, int iter, FILE *fp);  
 //  Compute Force using F = -dV/dr
 //  solve F = ma for use in Velocity Verlet
+//  also computes the total potential energy (Epot) for the same positions
 void computeAccelerations();
 //  Numerical Recipes function for generation gaussian distribution
 double gaussdist();
 //  Initialize velocities according to user-supplied initial Temperature (Tinit)
 void initializeVelocities();
-//  Compute total potential energy from particle coordinates
-double Potential();
 //  Compute mean squared velocity from particle velocities
 double MeanSquaredVelocity();
 //  Compute total kinetic energy from particle mass and velocities
@@ -311,7 +312,8 @@ int main()
         //  We would also like to use the IGL to try to see if we can extract the gas constant
         mvs = MeanSquaredVelocity();
         KE = Kinetic();
-        PE = Potential();
+        //  computed in the last computeAccelerations call (same positions)
+        PE = Epot;
         
         // Temperature from Kinetic Theory
         Temp = m*mvs/(3*kB) * TempFac;
@@ -456,43 +458,18 @@ double Kinetic() { //Write Function here!
 }
 
 
-// Function to calculate the potential energy of the system
-double Potential() {
-    double quot, r2, rnorm, term1, term2, Pot;
-    int i, j, k;
-    
-    Pot=0.;
-    for (i=0; i<N; i++) {
-        for (j=0; j<N; j++) {
-            
-            if (j!=i) {
-                r2=0.;
-                for (k=0; k<3; k++) {
-                    r2 += (r[i][k]-r[j][k])*(r[i][k]-r[j][k]);
-                }
-                rnorm=sqrt(r2);
-                quot=sigma/rnorm;
-                term1 = pow(quot,12.);
-                term2 = pow(quot,6.);
-                
-                Pot += 4*epsilon*(term1 - term2);
-                
-            }
-        }
-    }
-    
-    return Pot;
-}
-
 
 
 //   Uses the derivative of the Lennard-Jones potential to calculate
 //   the forces on each atom.  Then uses a = F/m to calculate the
-//   accelleration of each atom. 
+//   accelleration of each atom.
+//   The potential energy is accumulated in the same pair loop and
+//   stored in Epot (replaces the former Potential() function).
 void computeAccelerations() {
     int i, j, k;
     double f, rSqd;
     double rij[3]; // position of i relative to j
+    double Pot = 0.;
     
     
     for (i = 0; i < N; i++) {  // set all accelerations to zero
@@ -513,7 +490,12 @@ void computeAccelerations() {
             }
             
             //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
-            f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
+            //  24*(2*r^-14 - r^-8) with a single division: inv = 1/r^2, inv6 = r^-6
+            double inv  = 1.0 / rSqd;
+            double inv6 = inv*inv*inv;
+            f = 24 * inv * inv6 * (2*inv6 - 1);
+            //  pair potential energy 4*(r^-12 - r^-6), reusing inv6
+            Pot += 4*(inv6*inv6 - inv6);
             for (k = 0; k < 3; k++) {
                 //  from F = ma, where m = 1 in natural units!
                 a[i][k] += rij[k] * f;
@@ -521,6 +503,9 @@ void computeAccelerations() {
             }
         }
     }
+    //  each pair is visited once here, but the original definition sums
+    //  over both (i,j) and (j,i), so the total is doubled
+    Epot = 2*Pot;
 }
 
 // returns sum of dv/dt*m/A (aka Pressure) from elastic collisions with walls
