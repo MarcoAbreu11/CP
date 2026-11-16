@@ -161,7 +161,7 @@ Recalcular f após a seq_opt.
 
 ## 8. Validação e medição da seq_opt (tag seq_opt)
 
-### Alterações (E2)
+### Alterações
 - Potential() removida: energia potencial calculada dentro de computeAccelerations (mesmas posições:
   entre as duas chamadas só mudam velocidades) e guardada em Epot.
 - 1 divisão por par (inv = 1/r²), sem sqrt nem pow:
