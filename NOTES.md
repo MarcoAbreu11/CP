@@ -86,8 +86,8 @@ Tolerância proposta (a confirmar com o E2):
 |---|---|
 | `cp_output.txt` — T, KE, PE, Etot (por passo) | ≤ 1e-6 |
 | `cp_output.txt` — P (por passo) | Só informativo |
-| `cp_average.txt` — T médio e PV/nT | ≤ 1e-6 |
-| `cp_average.txt` — P médio | ≤ 1e-4 |
+| `cp_average.txt` — T médio | ≤ 1e-6 |
+| `cp_average.txt` — P médio, PV/nT e Z | ≤ 1e-4 (PV/nT e Z são calculados a partir da pressão) |
 
 Justificação:
 - Margem acima dos 1e-13 observados, porque as versões OpenMP reordenam somas maiores
@@ -117,6 +117,7 @@ paste reference/full/cp_output.txt results/a/cp_output.txt | awk 'NR>1{
 | 15/11 | | (a) | 5000 | — | -O3 -ffast-math | *(média ± desvio)* | ref | perf stat -r 5 |
 
 ---
+
 ## 6. Profiling inicial (código original, flags da baseline (a): -O3 -ffast-math)
 
 Comandos: scripts/prof_perf.sh, scripts/prof_scorep.sh, scripts/scale_n.sh
@@ -155,5 +156,74 @@ Saídas: profiling/perf/, profiling/scorep/, profiling/scaleN/
 f ≈ 0.9998 → Smax(12) = 11.97 · Smax(24) = 23.89 · Smax(48) = 47.5.
 Amdahl não é o limite; desvios reais vêm de sincronização (a[j]), desequilíbrio (ciclo triangular) e memória (PL06).
 Recalcular f após a seq_opt.
+
+---
+
+## 8. Validação e medição da seq_opt (tag seq_opt)
+
+### Alterações (E2)
+- Potential() removida: energia potencial calculada dentro de computeAccelerations (mesmas posições:
+  entre as duas chamadas só mudam velocidades) e guardada em Epot.
+- 1 divisão por par (inv = 1/r²), sem sqrt nem pow:
+  inv6 = inv³ · f = 24·inv·inv6·(2·inv6 − 1) · Pot += 4·(inv6² − inv6).
+- Epot = 2·Pot mantém a semântica original (soma sobre (i,j) e (j,i)).
+- Pares por passo: 37.5 M → 12.5 M.
+- Revisão E1: transformação correta. Notas: linha do N passou de 214 para 215 (scripts usam o texto
+  "N = 5000;"); σ = ε = 1 assumido também na energia.
+
+### Validação (scripts/compare.sh, tolerância 1e-6; P, PV/nT e Z 1e-4)
+| Versão | N | PE máx. rel. | Etot máx. rel. | T, KE | Resultado |
+|---|---|---|---|---|---|
+| (b) | 5000 | 1.9e-13 | 2.3e-13 | 0 | OK |
+| (c) | 200 | 0 | 0 | 0 | OK |
+| (c) | 5000 | 5.8e-13 | 7.9e-13 | 0 | OK |
+| (c_native) | 5000 | 5.8e-13 | 7.9e-13 | 0 | OK |
+
+### Medição (scripts/measure.sh, perf stat -r 5, 1 thread)
+| Versão | Código | Flags | Tempo (s) | #I | Ciclos | IPC | CPI |
+|---|---|---|---|---|---|---|---|
+| (a) | original | -O3 -ffast-math | 325.24 ± 0.005 | 216.8e9 | 650.4e9 | 0.33 | 3.00 |
+| (b) | original | + -march=native | 325.58 ± 0.011 | 216.8e9 | 651.1e9 | 0.33 | 3.00 |
+| (c) | seq_opt | -O3 -ffast-math | 82.12 ± 0.005 | 101.1e9 | 164.2e9 | 0.62 | 1.62 |
+| (c_native) | seq_opt | + -march=native | 85.25 ± 0.029 | 101.1e9 | 170.5e9 | 0.59 | 1.69 |
+
+### Ganhos
+- Código (a → c): 3.96×
+- Flag -march=native no original (a → b): 0.999× (sem ganho; mesmo #I → código praticamente igual)
+- Flag -march=native na seq_opt (c → c_native): 0.96× (3.8% mais lento; mesmo #I, mais ciclos)
+- Melhor sequencial: (c) 82.12 s
+
+### Explicação (Texe = #I × CPI × Tcc, Tcc = 0.5 ns)
+- #I: 216.8e9 → 101.1e9 = 2.14×
+- CPI: 3.00 → 1.62 = 1.85×
+- Total: 2.14 × 1.85 = 3.96× ✓
+
+| Por par | Instruções | Ciclos | Tempo |
+|---|---|---|---|
+| Original (≈7.55e9 pares) | 28.7 | 86 | 43 ns |
+| seq_opt (≈2.52e9 pares) | 40.0 | 65 | 32.5 ns |
+
+- 3× menos pares; cada par tem mais instruções (força + energia), mas menos ciclos
+  (sem sqrt, 1 só divisão → cadeia de dependências mais curta).
+
+### Novo perfil (scripts/prof_version.sh, perf, N=5000, -O3 -ffast-math)
+| Função | % tempo |
+|---|---|
+| computeAccelerations | 99.97% |
+| VelocityVerlet (parte O(N)) | 0.01% |
+| main (inclui Kinetic e MeanSquaredVelocity por inlining) | 0.00% |
+| Resto (kernel, libc) | ~0.02% |
+
+Ciclos no perf record (164.6e9) ≈ perf stat (164.2e9).
+
+### Amdahl (conservador: tudo fora de computeAccelerations como sequencial)
+f ≈ 0.9997 → Smax(12) = 11.96 · Smax(24) = 23.84 · Smax(48) = 47.3 (≈ 1.7 s mínimo teórico).
+Limite real esperado dentro de computeAccelerations: conflito de escrita em a[j],
+reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
+
+### Decisões
+- seq_opt aprovada (validação OK, 3.96×).
+- Flags provisórias: -O3 -ffast-math -fopenmp (sem -march=native); voltar a testar native com omp_v1.
+- Decisão final de flags e threads: 23/11, em conjunto.
 
 ---

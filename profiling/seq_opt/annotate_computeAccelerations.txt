@@ -1,0 +1,183 @@
+ Percent |	Source code & Disassembly of md for cycles (82453 samples, percent: local period)
+-------------------------------------------------------------------------------------------------
+         :
+         :
+         :
+         :            Disassembly of section .text:
+         :
+         :            00000000004016f0 <computeAccelerations()>:
+         :            computeAccelerations():
+         :            double f, rSqd;
+         :            double rij[3]; // position of i relative to j
+         :            double Pot = 0.;
+         :
+         :
+         :            for (i = 0; i < N; i++) {  // set all accelerations to zero
+    0.00 :   4016f0: adrp    x10, 420000 <exit@GLIBC_2.17>
+    0.00 :   4016f4: ldr     w7, [x10, #224]
+    0.00 :   4016f8: cmp     w7, #0x0
+    0.00 :   4016fc: b.le    401898 <computeAccelerations()+0x1a8>
+    0.00 :   401700: cmp     w7, #0x1
+    0.00 :   401704: b.eq    401884 <computeAccelerations()+0x194>  // b.none
+    0.00 :   401708: lsr     w1, w7, #1
+    0.00 :   40170c: adrp    x6, 43d000 <F+0x1cee0>
+    0.00 :   401710: add     x6, x6, #0x600
+    0.00 :   401714: mov     w2, #0x30                       // #48
+         :            for (k = 0; k < 3; k++) {
+         :            a[i][k] = 0;
+    0.00 :   401718: movi    v31.4s, #0x0
+         :            for (i = 0; i < N; i++) {  // set all accelerations to zero
+    0.00 :   40171c: mov     x0, x6
+    0.00 :   401720: umaddl  x1, w1, w2, x6
+         :            a[i][k] = 0;
+    0.00 :   401724: add     x0, x0, #0x30
+    0.00 :   401728: stp     q31, q31, [x0, #-48]
+    0.00 :   40172c: stur    q31, [x0, #-16]
+         :            for (i = 0; i < N; i++) {  // set all accelerations to zero
+    0.00 :   401730: cmp     x1, x0
+    0.00 :   401734: b.ne    401724 <computeAccelerations()+0x34>  // b.any
+    0.00 :   401738: tbz     w7, #0, 401758 <computeAccelerations()+0x68>
+    0.00 :   40173c: and     w0, w7, #0xfffffffe
+         :            a[i][k] = 0;
+    0.00 :   401740: sbfiz   x1, x0, #1, #32
+    0.00 :   401744: add     x0, x1, w0, sxtw
+    0.00 :   401748: lsl     x0, x0, #3
+    0.00 :   40174c: add     x1, x6, x0
+    0.00 :   401750: str     q31, [x6, x0]
+    0.00 :   401754: str     d31, [x1, #16]
+         :            }
+         :            }
+         :            for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+    0.00 :   401758: add     x6, x6, #0x18
+    0.00 :   40175c: adrp    x4, 477000 <v+0x1c520>
+         :            double Pot = 0.;
+    0.00 :   401760: movi    d25, #0x0
+    0.00 :   401764: add     x4, x4, #0xfc0
+         :            for (i = 0; i < N; i++) {  // set all accelerations to zero
+    0.00 :   401768: mov     x1, x6
+    0.00 :   40176c: add     x4, x4, #0x18
+    0.00 :   401770: mov     w8, w7
+    0.00 :   401774: sub     w9, w7, #0x1
+    0.00 :   401778: mov     x5, #0x1                        // #1
+         :            rSqd += rij[k] * rij[k];
+         :            }
+         :
+         :            //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
+         :            //  24*(2*r^-14 - r^-8) with a single division: inv = 1/r^2, inv6 = r^-6
+         :            double inv  = 1.0 / rSqd;
+    0.00 :   40177c: fmov    d26, #1.000000000000000000e+00
+         :            double inv6 = inv*inv*inv;
+         :            f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   401780: fmov    d27, #2.400000000000000000e+01
+    0.00 :   401784: fmov    d28, #2.000000000000000000e+00
+    0.00 :   401788: fmov    d29, #-1.000000000000000000e+00
+         :            //  pair potential energy 4*(r^-12 - r^-6), reusing inv6
+         :            Pot += 4*(inv6*inv6 - inv6);
+    0.00 :   40178c: fmov    d30, #4.000000000000000000e+00
+         :            for (j = i+1; j < N; j++) {
+    0.00 :   401790: cmp     w7, w5
+    0.00 :   401794: b.le    401860 <computeAccelerations()+0x170>
+    0.00 :   401798: sub     w3, w9, w5
+         :            rij[k] = r[i][k] - r[j][k];
+    0.00 :   40179c: ldur    d22, [x4, #-8]
+    0.02 :   4017a0: add     x3, x3, x5
+    0.00 :   4017a4: mov     x0, x1
+    0.00 :   4017a8: ldp     d24, d23, [x4, #-24]
+    0.00 :   4017ac: add     x3, x3, x3, lsl #1
+    0.00 :   4017b0: mov     x2, x4
+    0.00 :   4017b4: add     x3, x6, x3, lsl #3
+    0.00 :   4017b8: nop
+    0.00 :   4017bc: nop
+    1.59 :   4017c0: ldp     d21, d20, [x2]
+         :            for (j = i+1; j < N; j++) {
+    0.00 :   4017c4: add     x0, x0, #0x18
+         :            rij[k] = r[i][k] - r[j][k];
+    0.00 :   4017c8: ldr     d18, [x2, #16]
+         :            for (j = i+1; j < N; j++) {
+    1.49 :   4017cc: add     x2, x2, #0x18
+         :            for (k = 0; k < 3; k++) {
+         :            //  from F = ma, where m = 1 in natural units!
+         :            a[i][k] += rij[k] * f;
+    5.73 :   4017d0: ldur    d4, [x1, #-24]
+         :            rij[k] = r[i][k] - r[j][k];
+    0.01 :   4017d4: fsub    d20, d23, d20
+    0.01 :   4017d8: fsub    d21, d24, d21
+   12.89 :   4017dc: fsub    d18, d22, d18
+         :            rSqd += rij[k] * rij[k];
+    0.00 :   4017e0: fmul    d6, d20, d20
+    0.01 :   4017e4: fmadd   d6, d21, d21, d6
+         :            double inv  = 1.0 / rSqd;
+    0.02 :   4017e8: fmadd   d6, d18, d18, d6
+    2.99 :   4017ec: fdiv    d6, d26, d6
+         :            double inv6 = inv*inv*inv;
+    4.38 :   4017f0: fmul    d5, d6, d6
+    6.30 :   4017f4: fmul    d5, d5, d6
+         :            f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.01 :   4017f8: fmul    d6, d6, d27
+    9.14 :   4017fc: fmadd   d16, d5, d28, d29
+         :            Pot += 4*(inv6*inv6 - inv6);
+    4.11 :   401800: fsub    d19, d5, d26
+         :            f = 24 * inv * inv6 * (2*inv6 - 1);
+    7.98 :   401804: fmul    d16, d16, d5
+         :            Pot += 4*(inv6*inv6 - inv6);
+    0.01 :   401808: fmul    d5, d5, d30
+         :            f = 24 * inv * inv6 * (2*inv6 - 1);
+   11.92 :   40180c: fmul    d16, d6, d16
+         :            Pot += 4*(inv6*inv6 - inv6);
+    0.00 :   401810: fmadd   d25, d19, d5, d25
+         :            a[i][k] += rij[k] * f;
+   13.68 :   401814: fmadd   d4, d16, d21, d4
+    2.20 :   401818: stur    d4, [x1, #-24]
+         :            a[j][k] -= rij[k] * f;
+    7.71 :   40181c: ldur    d3, [x0, #-24]
+    0.01 :   401820: fmsub   d3, d16, d21, d3
+    0.02 :   401824: stur    d3, [x0, #-24]
+         :            a[i][k] += rij[k] * f;
+    0.00 :   401828: ldur    d2, [x1, #-16]
+    1.55 :   40182c: fmadd   d2, d16, d20, d2
+    0.01 :   401830: stur    d2, [x1, #-16]
+         :            a[j][k] -= rij[k] * f;
+    0.00 :   401834: ldur    d1, [x0, #-16]
+    0.33 :   401838: fmsub   d1, d16, d20, d1
+    1.56 :   40183c: stur    d1, [x0, #-16]
+         :            a[i][k] += rij[k] * f;
+    0.00 :   401840: ldur    d0, [x1, #-8]
+    0.00 :   401844: fmadd   d0, d16, d18, d0
+    1.21 :   401848: stur    d0, [x1, #-8]
+         :            a[j][k] -= rij[k] * f;
+    1.54 :   40184c: ldur    d17, [x0, #-8]
+    0.00 :   401850: fmsub   d17, d16, d18, d17
+    0.00 :   401854: stur    d17, [x0, #-8]
+         :            for (j = i+1; j < N; j++) {
+    0.00 :   401858: cmp     x3, x0
+    1.55 :   40185c: b.ne    4017c0 <computeAccelerations()+0xd0>  // b.any
+         :            for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+    0.00 :   401860: add     x5, x5, #0x1
+    0.00 :   401864: add     x4, x4, #0x18
+    0.00 :   401868: add     x1, x1, #0x18
+    0.00 :   40186c: cmp     x8, x5
+    0.00 :   401870: b.ne    401790 <computeAccelerations()+0xa0>  // b.any
+         :            }
+         :            }
+         :            }
+         :            //  each pair is visited once here, but the original definition sums
+         :            //  over both (i,j) and (j,i), so the total is doubled
+         :            Epot = 2*Pot;
+    0.00 :   401874: fadd    d31, d25, d25
+    0.00 :   401878: add     x10, x10, #0xe0
+    0.00 :   40187c: str     d31, [x10, #8]
+         :            }
+    0.00 :   401880: ret
+         :            a[i][k] = 0;
+    0.00 :   401884: movi    v31.4s, #0x0
+    0.00 :   401888: adrp    x0, 43d000 <F+0x1cee0>
+    0.00 :   40188c: add     x1, x0, #0x600
+    0.00 :   401890: str     q31, [x0, #1536]
+    0.00 :   401894: str     d31, [x1, #16]
+         :            rij[k] = r[i][k] - r[j][k];
+    0.00 :   401898: movi    d31, #0x0
+         :            Epot = 2*Pot;
+    0.00 :   40189c: add     x10, x10, #0xe0
+    0.00 :   4018a0: str     d31, [x10, #8]
+         :            }
+    0.00 :   4018a4: ret
