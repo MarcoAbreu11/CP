@@ -1,4 +1,4 @@
-# CP — WA Fase 1 · Notas do projeto
+# CP — WA Fase 1 · Notas do projeto 
 
 Grupo: Marco António, pg64003 · Cláudio, pgXXXXX
 
