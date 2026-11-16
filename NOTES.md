@@ -168,8 +168,6 @@ Recalcular f após a seq_opt.
   inv6 = inv³ · f = 24·inv·inv6·(2·inv6 − 1) · Pot += 4·(inv6² − inv6).
 - Epot = 2·Pot mantém a semântica original (soma sobre (i,j) e (j,i)).
 - Pares por passo: 37.5 M → 12.5 M.
-- Revisão E1: transformação correta. Notas: linha do N passou de 214 para 215 (scripts usam o texto
-  "N = 5000;"); σ = ε = 1 assumido também na energia.
 
 ### Validação (scripts/compare.sh, tolerância 1e-6; P, PV/nT e Z 1e-4)
 | Versão | N | PE máx. rel. | Etot máx. rel. | T, KE | Resultado |
