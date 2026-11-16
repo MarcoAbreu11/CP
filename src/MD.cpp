@@ -420,6 +420,7 @@ double MeanSquaredVelocity() {
     double vz2 = 0;
     double v2;
     
+    #pragma omp parallel for reduction(+:vx2,vy2,vz2)
     for (int i=0; i<N; i++) {
         
         vx2 = vx2 + v[i][0]*v[i][0];
@@ -437,12 +438,12 @@ double MeanSquaredVelocity() {
 //  Function to calculate the kinetic energy of the system
 double Kinetic() { //Write Function here!  
     
-    double v2, kin;
-    
-    kin =0.;
+    double kin = 0.;
+    #pragma omp parallel for reduction(+:kin)
     for (int i=0; i<N; i++) {
         
-        v2 = 0.;
+        double v2 = 0.;
+        
         for (int j=0; j<3; j++) {
             
             v2 += v[i][j]*v[i][j];
@@ -466,23 +467,23 @@ double Kinetic() { //Write Function here!
 //   The potential energy is accumulated in the same pair loop and
 //   stored in Epot (replaces the former Potential() function).
 void computeAccelerations() {
-    int i, j, k;
-    double f, rSqd;
-    double rij[3]; // position of i relative to j
     double Pot = 0.;
     
-    
-    for (i = 0; i < N; i++) {  // set all accelerations to zero
-        for (k = 0; k < 3; k++) {
+    for (int i = 0; i < N; i++) {  // set all accelerations to zero
+        for (int k = 0; k < 3; k++) {
             a[i][k] = 0;
         }
     }
-    for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
-        for (j = i+1; j < N; j++) {
-            // initialize r^2 to zero
-            rSqd = 0;
+
+    //  a[j] is written by several threads: each thread gets a private copy
+    //  of a (array reduction), summed at the end; Pot is a scalar reduction
+    #pragma omp parallel for schedule(static) reduction(+:a[0:N][0:3], Pot)
+    for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+        for (int j = i+1; j < N; j++) {
+            double rij[3]; // position of i relative to j
+            double rSqd = 0;
             
-            for (k = 0; k < 3; k++) {
+            for (int k = 0; k < 3; k++) {
                 //  component-by-componenent position of i relative to j
                 rij[k] = r[i][k] - r[j][k];
                 //  sum of squares of the components
@@ -493,10 +494,10 @@ void computeAccelerations() {
             //  24*(2*r^-14 - r^-8) with a single division: inv = 1/r^2, inv6 = r^-6
             double inv  = 1.0 / rSqd;
             double inv6 = inv*inv*inv;
-            f = 24 * inv * inv6 * (2*inv6 - 1);
+            double f = 24 * inv * inv6 * (2*inv6 - 1);
             //  pair potential energy 4*(r^-12 - r^-6), reusing inv6
             Pot += 4*(inv6*inv6 - inv6);
-            for (k = 0; k < 3; k++) {
+            for (int k = 0; k < 3; k++) {
                 //  from F = ma, where m = 1 in natural units!
                 a[i][k] += rij[k] * f;
                 a[j][k] -= rij[k] * f;
@@ -510,7 +511,6 @@ void computeAccelerations() {
 
 // returns sum of dv/dt*m/A (aka Pressure) from elastic collisions with walls
 double VelocityVerlet(double dt, int iter, FILE *fp) {
-    int i, j, k;
     
     double psum = 0.;
     
@@ -519,8 +519,9 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
     //computeAccelerations();
     //  Update positions and velocity with current velocity and acceleration
     //printf("  Updated Positions!\n");
-    for (i=0; i<N; i++) {
-        for (j=0; j<3; j++) {
+    #pragma omp parallel for
+    for (int i=0; i<N; i++) {
+        for (int j=0; j<3; j++) {
             r[i][j] += v[i][j]*dt + 0.5*a[i][j]*dt*dt;
             
             v[i][j] += 0.5*a[i][j]*dt;
@@ -530,15 +531,17 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
     //  Update accellerations from updated positions
     computeAccelerations();
     //  Update velocity with updated acceleration
-    for (i=0; i<N; i++) {
-        for (j=0; j<3; j++) {
+    #pragma omp parallel for
+    for (int i=0; i<N; i++) {
+        for (int j=0; j<3; j++) {
             v[i][j] += 0.5*a[i][j]*dt;
         }
     }
     
     // Elastic walls
-    for (i=0; i<N; i++) {
-        for (j=0; j<3; j++) {
+    #pragma omp parallel for reduction(+:psum)
+    for (int i=0; i<N; i++) {
+        for (int j=0; j<3; j++) {
             if (r[i][j]<0.) {
                 v[i][j] *=-1.; //- elastic walls
                 psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls
