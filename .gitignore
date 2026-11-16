@@ -4,3 +4,4 @@
 results/
 perf.data*
 scorep-*tmp_*/
+versions/
