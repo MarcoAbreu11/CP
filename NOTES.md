@@ -219,9 +219,4 @@ f ≈ 0.9997 → Smax(12) = 11.96 · Smax(24) = 23.84 · Smax(48) = 47.3 (≈ 1.
 Limite real esperado dentro de computeAccelerations: conflito de escrita em a[j],
 reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 
-### Decisões
-- seq_opt aprovada (validação OK, 3.96×).
-- Flags provisórias: -O3 -ffast-math -fopenmp (sem -march=native); voltar a testar native com omp_v1.
-- Decisão final de flags e threads: 23/11, em conjunto.
-
 ---
