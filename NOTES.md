@@ -159,7 +159,7 @@ Recalcular f após a seq_opt.
 
 ---
 
-## 8. Validação e medição da seq_opt (tag seq_opt)
+## 7. Validação e medição da seq_opt (tag seq_opt)
 
 ### Alterações
 - Potential() removida: energia potencial calculada dentro de computeAccelerations (mesmas posições:
@@ -218,5 +218,69 @@ Ciclos no perf record (164.6e9) ≈ perf stat (164.2e9).
 f ≈ 0.9997 → Smax(12) = 11.96 · Smax(24) = 23.84 · Smax(48) = 47.3 (≈ 1.7 s mínimo teórico).
 Limite real esperado dentro de computeAccelerations: conflito de escrita em a[j],
 reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
+
+---
+
+## 8. OpenMP v1 (tag omp_v1)
+
+### Implementação (E2)
+- parallel for em todos os ciclos: MeanSquaredVelocity, Kinetic (reduction escalar),
+  computeAccelerations, 3 ciclos de VelocityVerlet (paredes com reduction de psum).
+- computeAccelerations: schedule(static), reduction(+:a[0:N][0:3], Pot) — cópia privada de a
+  por thread (120 KB), somada no fim → resolve o conflito em a[j] sem critical/atomic.
+- Variáveis temporárias declaradas dentro dos ciclos → privadas.
+- 6 regiões paralelas por passo (~1200 fork-join no total).
+
+### Revisão
+- Sem data races encontradas na leitura do código.
+- Previsão: schedule(static) num ciclo triangular → thread 0 com ≈(2−1/p)× o trabalho médio
+  → S_static(p) ≈ p/(2−1/p).
+
+### Validação
+- Sem -fopenmp vs seq_opt: idêntico (erro 0 em tudo).
+- N=200: 1, 2, 4, 8, 16, 32, 48 threads × 3 repetições → todas OK, erro 0 em T, KE, PE, Etot.
+- N=5000: 1–48 threads (scaling) → todas OK.
+- Conclusão: sem sinais de data races (revisão do código + testes).
+
+### Scaling (N=5000, -O3 -ffast-math -fopenmp, schedule(static), 3 rep.)
+| p | T (s) | S(p) | E(p) | I/I1 | Limite static | S / limite | Amdahl |
+|---|---|---|---|---|---|---|---|
+| 1 | 82.157 | 1.00 | 1.00 | 1.00 | 1.00 | — | 1.00 |
+| 2 | 61.614 | 1.33 | 0.67 | 1.00 | 1.33 | 1.00 | 2.0 |
+| 4 | 35.965 | 2.28 | 0.57 | 1.01 | 2.29 | 1.00 | 4.0 |
+| 8 | 19.299 | 4.26 | 0.53 | 1.03 | 4.27 | 1.00 | 8.0 |
+| 12 | 13.186 | 6.23 | 0.52 | 1.05 | 6.26 | 0.99 | 11.96 |
+| 16 | 10.033 | 8.19 | 0.51 | 1.07 | 8.26 | 0.99 | 15.9 |
+| 24 | 6.804 | 12.07 | 0.50 | 1.11 | 12.25 | 0.99 | 23.8 |
+| 32 | 5.197 | 15.81 | 0.49 | 1.17 | 16.25 | 0.97 | 31.7 |
+| 48 | 3.655 | 22.48 | 0.47 | 1.42 | 24.25 | 0.93 | 47.3 |
+
+- O speedup segue o modelo do desequilíbrio (≤1.5% de diferença até 24 threads) → causa demonstrada.
+- Acima de 32 threads, overhead extra: I/I1 até 1.42 (spin-wait nas barreiras + reduction do array).
+- T_v1(1) = 82.157 s vs seq_opt 82.12 s → overhead OpenMP com 1 thread ≈ 0.05%.
+- Ganho total vs (a): 325.24 / 3.655 = 89×.
+- -march=native: 1 thr +3.0%, 12 thr +1.5%, 48 thr +5.6% (sempre pior) → retirar.
+
+### Escalonamento (diagnóstico: schedule(runtime) + OMP_SCHEDULE; S face a T_v1(1) = 82.157 s)
+| p | static | static,1 | dynamic,1 | dynamic,16 | guided |
+|---|---|---|---|---|---|
+| 12 | 13.22 s (S 6.2) | 6.96 s (S 11.8) | 6.97 s (S 11.8) | 6.94 s (S 11.85, E 0.99) | 13.19 s (S 6.2) |
+| 48 | 3.73 s (S 22.0) | 2.13 s (S 38.6) | 2.05 s (S 40.0, E 0.83) | 2.08 s (S 39.5) | 3.65 s (S 22.5) |
+- Todos validados OK.
+- static,1 e dynamic equilibram o ciclo triangular → 1.8–1.9× mais rápido do que static.
+- guided ≈ static: o 1.º bloco (~5000/48 linhas) apanha as linhas mais pesadas.
+- Com 48 threads, E ≈ 0.83: ~17% de overhead restante (já não é desequilíbrio).
+- Ganho total possível: 325.24 / 2.053 ≈ 158×.
+
+### Profiling (48 threads, perf, evento cycles)
+- computeAccelerations 90.45% · barreiras libgomp ≈ 8.1% · atómicas + mutex (reductions) ≈ 1.05% · resto < 0.5%.
+- O perfil sub-representa a espera: threads paradas há muito tempo adormecem e não geram
+  amostras de cycles; a evidência do desequilíbrio é o modelo + o teste de escalonamento.
+
+### Prioridades para a v2
+1. Escalonamento do ciclo triangular: static,1 / dynamic,1 / dynamic,16 (decisão E2).
+2. Depois, medir o overhead restante (reduction de a, 6 regiões por passo).
+3. Flags: -O3 -ffast-math -fopenmp (sem -march=native).
+4. Ciclos O(N) < 0.1%: não prioritários.
 
 ---
