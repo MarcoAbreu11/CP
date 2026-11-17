@@ -223,7 +223,7 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 
 ## 8. OpenMP v1 (tag omp_v1)
 
-### Implementação (E2)
+### Implementação
 - parallel for em todos os ciclos: MeanSquaredVelocity, Kinetic (reduction escalar),
   computeAccelerations, 3 ciclos de VelocityVerlet (paredes com reduction de psum).
 - computeAccelerations: schedule(static), reduction(+:a[0:N][0:3], Pot) — cópia privada de a
