@@ -4,9 +4,7 @@ Grupo: Marco António, pg64003 · Cláudio, pgXXXXX
 
 ---
 
-## 1. Regras acordadas (Marco + Cláudio)
-
-> Estado: proposta do E1 — falta confirmação do E2.
+## 1. Regras acordadas
 
 | Decisão | Valor |
 |---|---|
