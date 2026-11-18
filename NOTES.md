@@ -296,7 +296,7 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 - Posição de i em variáveis locais (rix, riy, riz); força sobre i acumulada em aix, aiy, aiz e escrita
   em a[i] uma vez por linha → dentro do ciclo j só há escritas em a[j] (+ Pot) → permite vetorizar.
 
-### Revisão E1
+### Revisão
 - Sem data races: variáveis locais privadas; a[] e Pot com reduction.
 - Equivalente à v1, a menos da ordem das somas.
 
