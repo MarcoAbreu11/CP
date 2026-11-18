@@ -1,0 +1,15 @@
+Error:
+Unknown --sort key: `tid'
+ Usage: perf report [<options>]
+
+    -s, --sort <key[,key2...]>
+                          sort by key(s): overhead overhead_sys overhead_us overhead_guest_sys
+			  overhead_guest_us overhead_children sample period
+			  pid comm dso symbol parent cpu socket srcline srcfile
+			  local_weight weight transaction trace symbol_size
+			  dso_size cgroup cgroup_id ipc_null time code_page_size
+			  local_ins_lat ins_lat p_stage_cyc dso_from dso_to
+			  symbol_from symbol_to mispredict abort in_tx cycles
+			  srcline_from srcline_to ipc_lbr symbol_daddr dso_daddr
+			  locked tlb mem snoop dcacheline symbol_iaddr phys_daddr
+			  data_page_size blocked

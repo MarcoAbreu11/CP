@@ -1,0 +1,381 @@
+ Percent |	Source code & Disassembly of md for cycles (43813 samples, percent: local period)
+-------------------------------------------------------------------------------------------------
+         :
+         :
+         :
+         :            Disassembly of section .text:
+         :
+         :            00000000004016f0 <computeAccelerations()>:
+         :            computeAccelerations():
+         :            //   The potential energy is accumulated in the same pair loop and
+         :            //   stored in Epot (replaces the former Potential() function).
+         :            void computeAccelerations() {
+         :            double Pot = 0.;
+         :
+         :            for (int i = 0; i < N; i++) {  // set all accelerations to zero
+    0.00 :   4016f0: adrp    x12, 420000 <exit@GLIBC_2.17>
+    0.00 :   4016f4: ldr     w9, [x12, #224]
+    0.00 :   4016f8: cmp     w9, #0x0
+    0.00 :   4016fc: b.le    401a58 <computeAccelerations()+0x368>
+    0.00 :   401700: cmp     w9, #0x1
+    0.00 :   401704: b.eq    401a44 <computeAccelerations()+0x354>  // b.none
+    0.00 :   401708: lsr     w1, w9, #1
+    0.00 :   40170c: adrp    x7, 43d000 <F+0x1cee0>
+    0.00 :   401710: add     x7, x7, #0x600
+    0.00 :   401714: mov     w2, #0x30                       // #48
+         :            for (int k = 0; k < 3; k++) {
+         :            a[i][k] = 0;
+    0.00 :   401718: movi    v31.4s, #0x0
+         :            for (int i = 0; i < N; i++) {  // set all accelerations to zero
+    0.00 :   40171c: mov     x0, x7
+         :            void computeAccelerations() {
+    0.00 :   401720: stp     d8, d9, [sp, #-64]!
+    0.00 :   401724: umaddl  x1, w1, w2, x7
+    0.00 :   401728: stp     d10, d11, [sp, #16]
+    0.00 :   40172c: stp     d12, d13, [sp, #32]
+    0.00 :   401730: stp     d14, d15, [sp, #48]
+    0.00 :   401734: nop
+    0.00 :   401738: nop
+    0.00 :   40173c: nop
+         :            a[i][k] = 0;
+    0.00 :   401740: add     x0, x0, #0x30
+    0.00 :   401744: stp     q31, q31, [x0, #-48]
+    0.00 :   401748: stur    q31, [x0, #-16]
+         :            for (int i = 0; i < N; i++) {  // set all accelerations to zero
+    0.00 :   40174c: cmp     x0, x1
+    0.00 :   401750: b.ne    401740 <computeAccelerations()+0x50>  // b.any
+    0.00 :   401754: and     w0, w9, #0xfffffffe
+    0.00 :   401758: tbz     w9, #0, 401774 <computeAccelerations()+0x84>
+         :            a[i][k] = 0;
+    0.00 :   40175c: sbfiz   x1, x0, #1, #32
+    0.00 :   401760: add     x0, x1, w0, sxtw
+    0.00 :   401764: lsl     x0, x0, #3
+    0.00 :   401768: add     x1, x7, x0
+    0.00 :   40176c: str     q31, [x7, x0]
+    0.00 :   401770: str     d31, [x1, #16]
+         :            //  a[j] is written by several threads: each thread gets a private copy
+         :            //  of a (array reduction), summed at the end; Pot is a scalar reduction.
+         :            //  Row i has N-1-i pairs (triangular loop): dynamic scheduling balances
+         :            //  the load, static would give the first thread ~2x the average work
+         :            #pragma omp parallel for schedule(dynamic) reduction(+:a[0:N][0:3], Pot)
+         :            for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+    0.00 :   401774: sub     w2, w9, #0x1
+    0.00 :   401778: adrp    x10, 477000 <v+0x1c520>
+         :            double Pot = 0.;
+    0.00 :   40177c: movi    d4, #0x0
+    0.00 :   401780: add     x10, x10, #0xfc0
+         :            double dy = riy - r[j][1];
+         :            double dz = riz - r[j][2];
+         :            double rSqd = dx*dx + dy*dy + dz*dz;
+         :            //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
+         :            //  24*(2*r^-14 - r^-8) with a single division: inv = 1/r^2, inv6 = r^-6
+         :            double inv  = 1.0 / rSqd;
+    0.00 :   401784: fmov    v5.2d, #1.000000000000000000e+00
+    0.00 :   401788: mov     w11, w2
+         :            double inv6 = inv*inv*inv;
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+         :            //  pair potential energy 4*(r^-12 - r^-6), reusing inv6
+         :            Pot += 4*(inv6*inv6 - inv6);
+    0.00 :   40178c: fmov    v20.2d, #-1.000000000000000000e+00
+    0.00 :   401790: add     x5, x10, #0x18
+    0.00 :   401794: fmov    v6.2d, #4.000000000000000000e+00
+    0.00 :   401798: add     x4, x7, #0x18
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   40179c: fmov    v7.2d, #2.000000000000000000e+00
+         :            for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+    0.00 :   4017a0: mov     w6, #0x0                        // #0
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   4017a4: fmov    v16.2d, #2.400000000000000000e+01
+    0.00 :   4017a8: mov     w13, #0x30                      // #48
+         :            double inv  = 1.0 / rSqd;
+    0.00 :   4017ac: fmov    d0, #1.000000000000000000e+00
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   4017b0: fmov    d13, #-1.000000000000000000e+00
+    0.00 :   4017b4: fmov    d14, #2.400000000000000000e+01
+         :            Pot += 4*(inv6*inv6 - inv6);
+    0.00 :   4017b8: fmov    d15, #4.000000000000000000e+00
+    0.00 :   4017bc: nop
+         :            for (int j = i+1; j < N; j++) {
+    0.00 :   4017c0: add     w6, w6, #0x1
+    0.00 :   4017c4: cmp     w6, w9
+    0.00 :   4017c8: b.ge    401a1c <computeAccelerations()+0x32c>  // b.tcont
+    0.00 :   4017cc: sub     w8, w2, #0x1
+         :            double rix = r[i][0], riy = r[i][1], riz = r[i][2];
+    0.00 :   4017d0: ldur    d3, [x5, #-8]
+    0.00 :   4017d4: ldp     d2, d1, [x5, #-24]
+    0.00 :   4017d8: cmp     w8, #0x1
+    0.00 :   4017dc: b.ls    401a30 <computeAccelerations()+0x340>  // b.plast
+    0.00 :   4017e0: movi    v23.4s, #0x0
+    0.00 :   4017e4: lsr     w3, w2, #1
+    0.00 :   4017e8: dup     v17.2d, v2.d[0]
+    0.00 :   4017ec: mov     x1, x5
+    0.00 :   4017f0: dup     v18.2d, v3.d[0]
+    0.00 :   4017f4: mov     x0, x4
+    0.00 :   4017f8: dup     v19.2d, v1.d[0]
+    0.00 :   4017fc: umaddl  x3, w3, w13, x4
+    0.00 :   401800: mov     v21.16b, v23.16b
+    0.00 :   401804: mov     v22.16b, v23.16b
+    0.00 :   401808: mov     v24.16b, v23.16b
+         :            double dx = rix - r[j][0];
+    1.42 :   40180c: ld3     {v10.2d-v12.2d}, [x1], #48
+         :            //  from F = ma, where m = 1 in natural units!
+         :            aix += dx * f;
+         :            aiy += dy * f;
+         :            aiz += dz * f;
+         :            a[j][0] -= dx * f;
+    5.72 :   401810: ld3     {v25.2d-v27.2d}, [x0]
+         :            double dy = riy - r[j][1];
+    0.00 :   401814: fsub    v28.2d, v19.2d, v11.2d
+         :            double dx = rix - r[j][0];
+   45.42 :   401818: fsub    v29.2d, v17.2d, v10.2d
+         :            double dz = riz - r[j][2];
+    0.00 :   40181c: fsub    v30.2d, v18.2d, v12.2d
+         :            double rSqd = dx*dx + dy*dy + dz*dz;
+    0.00 :   401820: fmul    v31.2d, v28.2d, v28.2d
+         :            double inv  = 1.0 / rSqd;
+    0.01 :   401824: fmla    v31.2d, v29.2d, v29.2d
+    1.44 :   401828: fmla    v31.2d, v30.2d, v30.2d
+    0.06 :   40182c: fdiv    v31.2d, v5.2d, v31.2d
+         :            double inv6 = inv*inv*inv;
+    0.32 :   401830: fmul    v8.2d, v31.2d, v31.2d
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.07 :   401834: fmul    v11.2d, v31.2d, v16.2d
+         :            double inv6 = inv*inv*inv;
+    1.77 :   401838: fmul    v8.2d, v8.2d, v31.2d
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   40183c: mov     v31.16b, v20.16b
+         :            Pot += 4*(inv6*inv6 - inv6);
+    1.23 :   401840: fadd    v9.2d, v8.2d, v20.2d
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.78 :   401844: fmla    v31.2d, v8.2d, v7.2d
+         :            Pot += 4*(inv6*inv6 - inv6);
+    1.60 :   401848: fmul    v10.2d, v8.2d, v6.2d
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    1.96 :   40184c: fmul    v31.2d, v31.2d, v8.2d
+         :            Pot += 4*(inv6*inv6 - inv6);
+    1.29 :   401850: fmla    v23.2d, v9.2d, v10.2d
+         :            a[j][0] -= dx * f;
+    3.67 :   401854: mov     v9.16b, v25.16b
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    4.64 :   401858: fmul    v31.2d, v31.2d, v11.2d
+         :            a[j][0] -= dx * f;
+    7.85 :   40185c: fmls    v9.2d, v31.2d, v29.2d
+         :            aix += dx * f;
+    2.10 :   401860: fmla    v21.2d, v31.2d, v29.2d
+         :            a[j][0] -= dx * f;
+    0.00 :   401864: mov     v29.16b, v27.16b
+         :            aiz += dz * f;
+    6.57 :   401868: fmla    v24.2d, v31.2d, v30.2d
+         :            a[j][0] -= dx * f;
+    4.57 :   40186c: mov     v10.16b, v9.16b
+    0.00 :   401870: mov     v9.16b, v26.16b
+    0.00 :   401874: fmls    v29.2d, v31.2d, v30.2d
+         :            aiy += dy * f;
+    1.98 :   401878: fmla    v22.2d, v31.2d, v28.2d
+         :            a[j][0] -= dx * f;
+    0.03 :   40187c: fmls    v9.2d, v31.2d, v28.2d
+    0.51 :   401880: mov     v12.16b, v29.16b
+    1.62 :   401884: mov     v11.16b, v9.16b
+    1.63 :   401888: st3     {v10.2d-v12.2d}, [x0], #48
+         :            for (int j = i+1; j < N; j++) {
+    1.57 :   40188c: cmp     x3, x0
+    0.00 :   401890: b.ne    40180c <computeAccelerations()+0x11c>  // b.any
+    0.01 :   401894: faddp   d23, v23.2d
+    0.04 :   401898: faddp   d21, v21.2d
+    0.00 :   40189c: faddp   d22, v22.2d
+    0.00 :   4018a0: faddp   d24, v24.2d
+    0.00 :   4018a4: fadd    d4, d4, d23
+    0.00 :   4018a8: tbz     w2, #0, 4019cc <computeAccelerations()+0x2dc>
+    0.00 :   4018ac: and     w0, w2, #0xfffffffe
+    0.00 :   4018b0: add     w0, w0, w6
+         :            double dx = rix - r[j][0];
+    0.00 :   4018b4: sbfiz   x2, x0, #1, #32
+         :            for (int j = i+1; j < N; j++) {
+    0.00 :   4018b8: add     w1, w0, #0x1
+         :            double dx = rix - r[j][0];
+    0.00 :   4018bc: add     x0, x2, w0, sxtw
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   4018c0: fmov    d12, #2.000000000000000000e+00
+         :            double dx = rix - r[j][0];
+    0.00 :   4018c4: add     x3, x10, x0, lsl #3
+    0.00 :   4018c8: lsl     x0, x0, #3
+         :            a[j][0] -= dx * f;
+    0.00 :   4018cc: add     x2, x7, x0
+         :            double dz = riz - r[j][2];
+    0.00 :   4018d0: ldp     d29, d30, [x3, #8]
+         :            double dx = rix - r[j][0];
+    0.00 :   4018d4: ldr     d28, [x10, x0]
+         :            a[j][1] -= dy * f;
+         :            a[j][2] -= dz * f;
+    0.00 :   4018d8: ldp     d26, d25, [x2, #8]
+         :            double dy = riy - r[j][1];
+    0.00 :   4018dc: fsub    d29, d1, d29
+         :            double dx = rix - r[j][0];
+    0.00 :   4018e0: fsub    d28, d2, d28
+         :            double dz = riz - r[j][2];
+    0.00 :   4018e4: fsub    d30, d3, d30
+         :            a[j][0] -= dx * f;
+    0.00 :   4018e8: ldr     d23, [x7, x0]
+         :            double rSqd = dx*dx + dy*dy + dz*dz;
+    0.00 :   4018ec: fmul    d31, d29, d29
+         :            double inv  = 1.0 / rSqd;
+    0.00 :   4018f0: fmadd   d31, d28, d28, d31
+    0.00 :   4018f4: fmadd   d31, d30, d30, d31
+    0.01 :   4018f8: fdiv    d31, d0, d31
+         :            double inv6 = inv*inv*inv;
+    0.02 :   4018fc: fmul    d27, d31, d31
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   401900: fmul    d19, d31, d14
+         :            double inv6 = inv*inv*inv;
+    0.00 :   401904: fmul    d27, d27, d31
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.01 :   401908: fmadd   d31, d27, d12, d13
+         :            Pot += 4*(inv6*inv6 - inv6);
+    0.00 :   40190c: fsub    d17, d27, d0
+    0.00 :   401910: fmul    d18, d27, d15
+    0.00 :   401914: fmadd   d4, d17, d18, d4
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   401918: fmul    d31, d31, d27
+    0.00 :   40191c: fmul    d31, d31, d19
+         :            a[j][0] -= dx * f;
+    0.01 :   401920: fmsub   d23, d31, d28, d23
+         :            a[j][1] -= dy * f;
+    0.00 :   401924: fmsub   d27, d31, d29, d26
+         :            a[j][2] -= dz * f;
+    0.00 :   401928: fmsub   d26, d31, d30, d25
+         :            aix += dx * f;
+    0.00 :   40192c: fmadd   d21, d31, d28, d21
+         :            aiy += dy * f;
+    0.00 :   401930: fmadd   d22, d31, d29, d22
+         :            aiz += dz * f;
+    0.00 :   401934: fmadd   d24, d31, d30, d24
+         :            a[j][0] -= dx * f;
+    0.00 :   401938: str     d23, [x7, x0]
+         :            a[j][1] -= dy * f;
+    0.00 :   40193c: stp     d27, d26, [x2, #8]
+         :            for (int j = i+1; j < N; j++) {
+    0.00 :   401940: cmp     w9, w1
+    0.00 :   401944: b.le    4019cc <computeAccelerations()+0x2dc>
+         :            double dx = rix - r[j][0];
+    0.00 :   401948: sbfiz   x0, x1, #1, #32
+    0.00 :   40194c: add     x1, x0, w1, sxtw
+    0.00 :   401950: add     x2, x10, x1, lsl #3
+    0.00 :   401954: lsl     x1, x1, #3
+         :            a[j][0] -= dx * f;
+    0.00 :   401958: add     x0, x7, x1
+         :            double dz = riz - r[j][2];
+    0.00 :   40195c: ldp     d29, d30, [x2, #8]
+         :            double dx = rix - r[j][0];
+    0.00 :   401960: ldr     d28, [x10, x1]
+         :            a[j][2] -= dz * f;
+    0.00 :   401964: ldp     d26, d25, [x0, #8]
+         :            double dy = riy - r[j][1];
+    0.00 :   401968: fsub    d29, d1, d29
+         :            double dx = rix - r[j][0];
+    0.00 :   40196c: fsub    d28, d2, d28
+         :            double dz = riz - r[j][2];
+    0.00 :   401970: fsub    d30, d3, d30
+         :            a[j][0] -= dx * f;
+    0.00 :   401974: ldr     d23, [x7, x1]
+         :            double rSqd = dx*dx + dy*dy + dz*dz;
+    0.00 :   401978: fmul    d31, d29, d29
+         :            double inv  = 1.0 / rSqd;
+    0.00 :   40197c: fmadd   d31, d28, d28, d31
+    0.00 :   401980: fmadd   d31, d30, d30, d31
+    0.00 :   401984: fdiv    d31, d0, d31
+         :            double inv6 = inv*inv*inv;
+    0.00 :   401988: fmul    d27, d31, d31
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   40198c: fmul    d19, d31, d14
+         :            double inv6 = inv*inv*inv;
+    0.00 :   401990: fmul    d27, d27, d31
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   401994: fmadd   d31, d27, d12, d13
+         :            Pot += 4*(inv6*inv6 - inv6);
+    0.00 :   401998: fmul    d17, d27, d15
+    0.00 :   40199c: fsub    d18, d27, d0
+    0.00 :   4019a0: fmadd   d4, d17, d18, d4
+         :            double f = 24 * inv * inv6 * (2*inv6 - 1);
+    0.00 :   4019a4: fmul    d31, d31, d27
+    0.00 :   4019a8: fmul    d31, d31, d19
+         :            a[j][0] -= dx * f;
+    0.00 :   4019ac: fmsub   d23, d31, d28, d23
+         :            a[j][1] -= dy * f;
+    0.00 :   4019b0: fmsub   d27, d31, d29, d26
+         :            aix += dx * f;
+    0.00 :   4019b4: fmadd   d21, d31, d28, d21
+         :            a[j][2] -= dz * f;
+    0.00 :   4019b8: fmsub   d26, d31, d30, d25
+         :            aiy += dy * f;
+    0.00 :   4019bc: fmadd   d22, d31, d29, d22
+         :            aiz += dz * f;
+    0.00 :   4019c0: fmadd   d24, d31, d30, d24
+         :            a[j][0] -= dx * f;
+    0.00 :   4019c4: str     d23, [x7, x1]
+         :            a[j][1] -= dy * f;
+    0.00 :   4019c8: stp     d27, d26, [x0, #8]
+         :            }
+         :            a[i][0] += aix;
+         :            a[i][1] += aiy;
+         :            a[i][2] += aiz;
+    0.00 :   4019cc: ldur    d31, [x4, #-8]
+         :            a[i][1] += aiy;
+    0.01 :   4019d0: ldp     d30, d29, [x4, #-24]
+         :            for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+    0.00 :   4019d4: mov     w2, w8
+         :            a[i][2] += aiz;
+    0.00 :   4019d8: fadd    d31, d31, d24
+         :            for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+    0.00 :   4019dc: add     x5, x5, #0x18
+    0.00 :   4019e0: add     x4, x4, #0x18
+         :            a[i][0] += aix;
+    0.00 :   4019e4: fadd    d30, d30, d21
+         :            a[i][1] += aiy;
+    0.01 :   4019e8: fadd    d29, d29, d22
+         :            a[i][2] += aiz;
+    0.00 :   4019ec: stur    d31, [x4, #-32]
+         :            a[i][0] += aix;
+    0.00 :   4019f0: stp     d30, d29, [x4, #-48]
+         :            for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+    0.00 :   4019f4: cmp     w6, w11
+    0.00 :   4019f8: b.ne    4017c0 <computeAccelerations()+0xd0>  // b.any
+         :            }
+         :            //  each pair is visited once here, but the original definition sums
+         :            //  over both (i,j) and (j,i), so the total is doubled
+         :            Epot = 2*Pot;
+    0.00 :   4019fc: fadd    d4, d4, d4
+    0.00 :   401a00: add     x12, x12, #0xe0
+         :            }
+    0.00 :   401a04: ldp     d10, d11, [sp, #16]
+    0.00 :   401a08: ldp     d12, d13, [sp, #32]
+    0.00 :   401a0c: ldp     d14, d15, [sp, #48]
+    0.00 :   401a10: ldp     d8, d9, [sp], #64
+         :            Epot = 2*Pot;
+    0.00 :   401a14: str     d4, [x12, #8]
+         :            }
+    0.00 :   401a18: ret
+         :            double aix = 0., aiy = 0., aiz = 0.;
+    0.00 :   401a1c: movi    d24, #0x0
+    0.00 :   401a20: sub     w8, w2, #0x1
+    0.00 :   401a24: fmov    d22, d24
+    0.00 :   401a28: fmov    d21, d24
+    0.00 :   401a2c: b       4019cc <computeAccelerations()+0x2dc>
+    0.00 :   401a30: movi    d24, #0x0
+         :            for (int j = i+1; j < N; j++) {
+    0.00 :   401a34: mov     w0, w6
+         :            double aix = 0., aiy = 0., aiz = 0.;
+    0.00 :   401a38: fmov    d22, d24
+    0.00 :   401a3c: fmov    d21, d24
+    0.00 :   401a40: b       4018b4 <computeAccelerations()+0x1c4>
+         :            a[i][k] = 0;
+    0.00 :   401a44: movi    v31.4s, #0x0
+    0.00 :   401a48: adrp    x0, 43d000 <F+0x1cee0>
+    0.00 :   401a4c: add     x1, x0, #0x600
+    0.00 :   401a50: str     q31, [x0, #1536]
+    0.00 :   401a54: str     d31, [x1, #16]
+         :            double aix = 0., aiy = 0., aiz = 0.;
+    0.00 :   401a58: movi    d4, #0x0
+         :            Epot = 2*Pot;
+    0.00 :   401a5c: add     x12, x12, #0xe0
+    0.00 :   401a60: str     d4, [x12, #8]
+    0.00 :   401a64: ret

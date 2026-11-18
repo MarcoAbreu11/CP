@@ -1,0 +1,90 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 45K of event 'cycles'
+# Event count (approx.): 89919550059
+#
+# Overhead       Samples  Shared Object      Symbol                                       IPC   [IPC Coverage]
+# ........  ............  .................  ...........................................  ....................
+#
+    76.92%         34404  md                 [.] computeAccelerations                     -      -            
+     7.85%          3495  libgomp.so.1.0.0   [.] gomp_mutex_lock_slow                     -      -            
+     7.74%          3347  libgomp.so.1.0.0   [.] gomp_team_barrier_wait_end               -      -            
+     3.68%          1600  libgomp.so.1.0.0   [.] gomp_barrier_wait_end                    -      -            
+     1.05%           480  md                 [.] __aarch64_cas8_relax                     -      -            
+     1.00%           450  libgomp.so.1.0.0   [.] __aarch64_cas4_acq                       -      -            
+     0.58%           261  libgomp.so.1.0.0   [.] __aarch64_ldadd8_sync                    -      -            
+     0.20%            90  libgomp.so.1.0.0   [.] __aarch64_ldadd4_acq_rel                 -      -            
+     0.19%            88  libgomp.so.1.0.0   [.] gomp_iter_dynamic_next                   -      -            
+     0.08%            38  libgomp.so.1.0.0   [.] gomp_barrier_wait                        -      -            
+     0.07%            30  libgomp.so.1.0.0   [.] __aarch64_ldadd4_sync                    -      -            
+     0.06%            29  md                 [.] VelocityVerlet                           -      -            
+     0.06%            27  md                 [.] VelocityVerlet                           -      -            
+     0.05%            27  [kernel.kallsyms]  [k] __softirqentry_text_start                -      -            
+     0.05%            23  md                 [.] VelocityVerlet                           -      -            
+     0.05%            22  libgomp.so.1.0.0   [.] gomp_thread_start                        -      -            
+     0.04%            19  libgomp.so.1.0.0   [.] __aarch64_cas8_acq                       -      -            
+     0.04%            19  md                 [.] Kinetic                                  -      -            
+     0.04%            17  libgomp.so.1.0.0   [.] __aarch64_cas8_relax                     -      -            
+     0.02%            11  libgomp.so.1.0.0   [.] __aarch64_swp4_rel                       -      -            
+     0.02%            11  libgomp.so.1.0.0   [.] omp_get_num_threads                      -      -            
+     0.02%             8  libgomp.so.1.0.0   [.] gomp_ptrlock_get_slow                    -      -            
+     0.02%             7  md                 [.] MeanSquaredVelocity                      -      -            
+     0.02%             7  [kernel.kallsyms]  [k] try_to_wake_up                           -      -            
+     0.02%             8  [kernel.kallsyms]  [k] get_signal                               -      -            
+     0.01%             5  [kernel.kallsyms]  [k] rebalance_domains                        -      -            
+     0.01%             1  libc-2.28.so       [.] __aarch64_cas4_acq                       -      -            
+     0.01%             1  [kernel.kallsyms]  [k] __list_add_valid                         -      -            
+     0.01%             2  [kernel.kallsyms]  [k] futex_wait_setup                         -      -            
+     0.01%             1  [lustre]           [k] ll_stats_ops_tally                       -      -            
+     0.01%             1  [kernel.kallsyms]  [k] rcu_cblist_dequeue                       -      -            
+     0.01%             3  libgomp.so.1.0.0   [.] gomp_new_team                            -      -            
+     0.01%             3  md                 [.] main                                     -      -            
+     0.01%             3  libgomp.so.1.0.0   [.] gomp_work_share_start                    -      -            
+     0.01%          1348  [kernel.kallsyms]  [k] finish_task_switch                       -      -            
+     0.00%             3  libgomp.so.1.0.0   [.] gomp_team_start                          -      -            
+     0.00%             2  libgomp.so.1.0.0   [.] gomp_team_end                            -      -            
+     0.00%             2  [kernel.kallsyms]  [k] acct_collect                             -      -            
+     0.00%             2  [kernel.kallsyms]  [k] taskstats_exit                           -      -            
+     0.00%             2  [kernel.kallsyms]  [k] rcu_core                                 -      -            
+     0.00%             2  libgomp.so.1.0.0   [.] omp_get_thread_num                       -      -            
+     0.00%             3  [kernel.kallsyms]  [k] el0_svc_handler                          -      -            
+     0.00%             2  [kernel.kallsyms]  [k] update_blocked_averages                  -      -            
+     0.00%             3  [kernel.kallsyms]  [k] get_page_from_freelist                   -      -            
+     0.00%             1  libgomp.so.1.0.0   [.] GOMP_loop_nonmonotonic_dynamic_next      -      -            
+     0.00%             1  [kernel.kallsyms]  [k] find_busiest_group                       -      -            
+     0.00%             1  [kernel.kallsyms]  [k] refcount_inc_not_zero                    -      -            
+     0.00%             1  libgomp.so.1.0.0   [.] gomp_init_task                           -      -            
+     0.00%             1  md                 [.] GOMP_atomic_end@plt                      -      -            
+     0.00%             1  [kernel.kallsyms]  [k] futex_wake                               -      -            
+     0.00%             1  libc-2.28.so       [.] hack_digit                               -      -            
+     0.00%             9  [kernel.kallsyms]  [k] schedule                                 -      -            
+     0.00%             1  [kernel.kallsyms]  [k] __arm64_sys_futex                        -      -            
+     0.00%             1  md                 [.] GOMP_loop_nonmonotonic_dynamic_next@plt  -      -            
+     0.00%             1  [kernel.kallsyms]  [k] arch_counter_read                        -      -            
+     0.00%             1  [kernel.kallsyms]  [k] note_gp_changes                          -      -            
+     0.00%             1  [kernel.kallsyms]  [k] queued_spin_lock_slowpath                -      -            
+     0.00%             1  [kernel.kallsyms]  [k] mark_wake_futex                          -      -            
+     0.00%             1  libgomp.so.1.0.0   [.] syscall@plt                              -      -            
+     0.00%             1  [kernel.kallsyms]  [k] do_el0_ia_bp_hardening                   -      -            
+     0.00%             3  [kernel.kallsyms]  [k] clear_page                               -      -            
+     0.00%             1  [kernel.kallsyms]  [k] __list_del_entry_valid                   -      -            
+     0.00%             1  [lustre]           [k] ll_layout_refresh                        -      -            
+     0.00%             1  [kernel.kallsyms]  [k] queue_work_on                            -      -            
+     0.00%             1  [kernel.kallsyms]  [k] alloc_pages_vma                          -      -            
+     0.00%             1  [kernel.kallsyms]  [k] __handle_mm_fault                        -      -            
+     0.00%             1  [kernel.kallsyms]  [k] flush_signal_handlers                    -      -            
+     0.00%            12  [kernel.kallsyms]  [k] calculate_sigpending                     -      -            
+     0.00%             1  [kernel.kallsyms]  [k] handle_mm_fault                          -      -            
+     0.00%             1  [kernel.kallsyms]  [k] down_read_trylock                        -      -            
+     0.00%             7  [kernel.kallsyms]  [k] schedule_tail                            -      -            
+     0.00%             4  [kernel.kallsyms]  [k] futex_wait_queue_me                      -      -            
+     0.00%             1  [kernel.kallsyms]  [k] _cond_resched                            -      -            
+     0.00%             5  [kernel.kallsyms]  [k] perf_event_exec                          -      -            
+
+
+#
+# (Tip: Save output of perf stat using: perf stat record <target workload>)
+#

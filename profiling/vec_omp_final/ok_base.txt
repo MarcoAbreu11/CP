@@ -1,0 +1,30 @@
+versions/omp_final.cpp:426:35: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:423:13: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:449:33: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:482:63: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:489:29: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:532:19: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:532:21: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:534:21: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:544:19: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:544:21: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:423:13: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:472:23: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:474:21: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:472:23: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:474:21: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:632:16: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:622:16: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:610:16: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:604:16: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:595:16: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:593:12: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:593:12: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:578:6: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:635:21: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:613:21: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:578:6: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:382:24: optimized: loop vectorized using 8 byte vectors
+versions/omp_final.cpp:472:23: optimized: loop vectorized using 16 byte vectors
+versions/omp_final.cpp:474:21: optimized: basic block part vectorized using 16 byte vectors
+versions/omp_final.cpp:423:13: optimized: basic block part vectorized using 16 byte vectors
