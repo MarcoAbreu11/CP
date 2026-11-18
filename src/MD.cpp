@@ -477,8 +477,11 @@ void computeAccelerations() {
 
     //  a[j] is written by several threads: each thread gets a private copy
     //  of a (array reduction), summed at the end; Pot is a scalar reduction.
+    //  The whole array is reduced: the section form a[0:N][0:3] gave wrong
+    //  results with Clang 18 (GCC was correct), and a has MAXPART ~ N rows.
     //  Row i has N-1-i pairs (triangular loop): dynamic scheduling balances
-    //  the load, static would give the first thread ~2x the average work
+    //  the load (static would give the first thread ~2x the average work);
+    //  chunks of 64 rows cut scheduling requests from ~5000 to ~79 per call
     #pragma omp parallel for schedule(dynamic,64) reduction(+:a, Pot)
     for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         //  position of i and force on i kept in local variables: inside the
