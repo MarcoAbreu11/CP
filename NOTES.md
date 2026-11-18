@@ -291,7 +291,7 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 - O omp_v2 do Cláudio (só dynamic, sem variáveis locais) foi medido como
   v1 + OMP_SCHEDULE=dynamic,1 (results/sched_omp_v1) e v1 com 1 thread (results/scaling_omp_v1).
 
-### Alterações (E2)
+### Alterações
 - schedule(dynamic) (= dynamic,1) no ciclo de pares — escolhido com base no teste de escalonamento da v1.
 - Posição de i em variáveis locais (rix, riy, riz); força sobre i acumulada em aix, aiy, aiz e escrita
   em a[i] uma vez por linha → dentro do ciclo j só há escritas em a[j] (+ Pot) → permite vetorizar.
@@ -311,7 +311,7 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 - N=5000, scaling 12 p × base e native: 24/24 OK.
 - Afinamento, escalonamentos e teste final: todos OK.
 
-### omp_v2 (só dynamic) vs omp_v2_vec (pedido do E2)
+### omp_v2 (só dynamic) vs omp_v2_vec
 | Threads | omp_v2 base | vec base (NEON) | vec native (SVE) | vec base / v2 | vec native / v2 |
 |---|---|---|---|---|---|
 | 1 | 82.157 s | 34.539 s | 24.898 s | 2.38× | 3.30× |
