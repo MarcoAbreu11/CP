@@ -436,17 +436,26 @@ Configuração final:
 - OMP_NUM_THREADS ?= 44
 - Código: schedule(dynamic,64) reduction(+:a, Pot) → tag omp_final
 
-### Verificação final (omp_final + Makefile final) — a preencher
+### Verificação final (omp_final + Makefile final)
 | Verificação | Script | Resultado |
 |---|---|---|
-| Vetorização do ciclo j (SVE) | vec_report.sh | |
-| Correção N=200, 1–48 thr × 3 rep. | validate_threads.sh | |
-| Correção N=5000 + scaling final (5 rep.) | scaling.sh | |
-| make run (5×), condições de avaliação | make_run.sh | tempos: … · validação: … |
+| Vetorização do ciclo j (SVE) | vec_report.sh | linha 489: "loop vectorized using variable length vectors" ✓ |
+| Correção N=200, 1–48 thr × 3 rep. | validate_threads.sh | 22/22 OK, erro 0; sem -fopenmp vs seq_opt OK |
+| Correção N=5000 (12 p) | scaling.sh | 12/12 OK |
+| Scaling final (5 rep.) | scaling.sh | T(1) = 24.730 s · T(44) = 0.778 s · S(44) = 31.79 · E(44) = 0.72 |
+| make run (10×) | make_run.sh | mediana 0.8005 s · média 0.803 s · mín. 0.732 · máx. 0.896 · 1/10 > 0.85 s · validação OK |
 
-### Ganhos (com o tempo final do make run a confirmar)
-- vs original (a): 325.24 / … ≈ …× (referência: 0.79 s → ≈ 410×)
-- vs seq_opt (c): 82.12 / … ≈ …× (referência: 0.79 s → ≈ 104×)
-- Melhor v1 (3.655 s) → final: ≈ …× (referência: 0.79 s → ≈ 4.6×)
+Compilação confirmada (build.txt): gcc -O3 -ffast-math -march=native -fopenmp src/MD.cpp -lm -o md
+OMP_NUM_THREADS no ambiente do job: não definido → o Makefile usa 44.
+make run ≈ +0.01–0.02 s face ao scaling (arranque do make).
+1.º make_run (11:54) correu com a configuração antiga (v2_vec com dynamic + 48 threads):
+0.844, 1.776, 1.808, 0.940, 0.783 → confirma as caudas de ~1.8 s do 48:dynamic,1.
+make_run.sh corrigido: apaga results/make_run no início e faz 10 execuções.
+
+### Ganhos finais (tempo de referência = mediana do make run: 0.8005 s)
+- vs original (a): 325.24 / 0.8005 = 406×
+- vs seq_opt (c): 82.12 / 0.8005 = 103×
+- vs melhor v1 (3.655 s): 4.6×
+- Strong scaling (omp_final): S(44) = 31.79 · E(44) = 0.72 · Amdahl(44) = 42.5 (75% do limite)
 
 ---
