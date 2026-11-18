@@ -18,4 +18,6 @@ cd $W
 export OMP_NUM_THREADS=$THREADS
 perf record -g -F 1000 -o perf.data ./md < ../inputdata.txt > /dev/null
 perf report -i perf.data -n --stdio --no-children -g none --sort dso,symbol > ../$OUT/flat.txt 2>&1
-perf report -i perf.data -n --stdio --no-children -g none --sort tid,symbol --percent-limit 0.05 > ../$OUT/by_thread.txt 2>&1
+perf report -i perf.data -n --stdio --no-children -g none --sort pid,symbol --percent-limit 0.05 > ../$OUT/by_thread.txt 2>&1
+S=$(awk '$NF ~ /^computeAccelerations/ {print $NF; exit}' ../$OUT/flat.txt)
+perf annotate -i perf.data --stdio "$S" > ../$OUT/annotate_compute.txt 2>&1
