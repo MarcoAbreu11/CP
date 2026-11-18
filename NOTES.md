@@ -285,10 +285,10 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 
 ## 9. OpenMP v2 (omp_v2_vec) e configuração final
 
-### Nomes
-- A nossa tag/pastas "omp_v2" = omp_v2_vec do Cláudio (dynamic + variáveis locais).
+### Nomes das versões
+- A tag/pastas "omp_v2" correspondem à versão omp_v2_vec (dynamic + variáveis locais).
   Tag omp_v2_vec criada no mesmo commit.
-- O omp_v2 do Cláudio (só dynamic, sem variáveis locais) foi medido como
+- A versão omp_v2 (só dynamic, sem variáveis locais) foi medida como
   v1 + OMP_SCHEDULE=dynamic,1 (results/sched_omp_v1) e v1 com 1 thread (results/scaling_omp_v1).
 
 ### Alterações
@@ -296,20 +296,22 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 - Posição de i em variáveis locais (rix, riy, riz); força sobre i acumulada em aix, aiy, aiz e escrita
   em a[i] uma vez por linha → dentro do ciclo j só há escritas em a[j] (+ Pot) → permite vetorizar.
 
-### Revisão
+### Revisão do código
 - Sem data races: variáveis locais privadas; a[] e Pot com reduction.
 - Equivalente à v1, a menos da ordem das somas.
+- Com dynamic, a atribuição de linhas às threads varia entre execuções (arredondamento pode variar
+  entre execuções sem constituir data race).
 
 ### Vetorização (scripts/vec_report.sh, GCC 15.2.0 no nó ARM, -fopt-info-vec-optimized)
 - -O3 -ffast-math: linha 489 (ciclo j) "loop vectorized using 16 byte vectors" → NEON, 2 doubles/instrução.
 - + -march=native: linha 489 "loop vectorized using variable length vectors" → SVE, 8 doubles no A64FX.
-- v1: ciclo j não vetorizado ("complicated access pattern" na escrita em a[i], segundo o E2).
+- v1: ciclo j não vetorizado ("complicated access pattern" na escrita em a[i]).
 
 ### Validação
 - Sem -fopenmp vs seq_opt: idêntico (P 6e-15, informativo).
 - N=200, 1–48 threads × 3 rep., base e native: 44/44 OK, erro 0.
 - N=5000, scaling 12 p × base e native: 24/24 OK.
-- Afinamento, escalonamentos e teste final: todos OK.
+- Afinamento, escalonamentos, teste final e afinidade: todos OK.
 
 ### omp_v2 (só dynamic) vs omp_v2_vec
 | Threads | omp_v2 base | vec base (NEON) | vec native (SVE) | vec base / v2 | vec native / v2 |
@@ -319,9 +321,9 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 | 48 | 2.053 s | 1.151 s | 0.988 s | 1.78× | 2.08× |
 - Jobs diferentes (variação entre jobs ~4%), irrelevante face a 1.8–3.3×.
 - omp_v2 + native não medido: ciclo não vetorizado; native foi pior nas versões não vetorizadas (seq_opt, v1).
-- Conclusão: a vec fica.
+- Conclusão: a versão vetorizada fica.
 
-### Scaling (scaling.sh, N=5000, 5 rep., código omp_v2_vec com schedule(dynamic))
+### Scaling (scaling.sh, N=5000, 5 rep., omp_v2_vec com schedule(dynamic), sem afinidade)
 | p | T base (s) | S | E | I/I1 | T native (s) | S | E | I/I1 |
 |---|---|---|---|---|---|---|---|---|
 | 1 | 34.539 | 1.00 | 1.00 | 1.00 | 24.898 | 1.00 | 1.00 | 1.00 |
@@ -358,7 +360,7 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 - native vs base a 44: 0.336 s ≫ 0.039 → 1.44× (significativo).
 
 ### Decomposição da eficiência: E(p) = [C(1)/C(p)] × [C(p)/(p·T·2 GHz)]
-(C = ciclos totais de todas as threads; 1.º fator = trabalho extra; 2.º = utilização)
+(C = ciclos totais de todas as threads; 1.º fator = trabalho extra; 2.º = utilização U)
 | | C1/Cp | U | E calc. | E medido |
 |---|---|---|---|---|
 | native 24 | 0.932 | 0.971 | 0.905 | 0.91 |
@@ -376,7 +378,7 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 | ± | 0.024 | 0.012 | 0.024 | 0.017 | 0.026 | 0.008 | 0.030 | 0.035 | 0.211 |
 - Entre 40 e 47: curva sem padrão → ruído. O mesmo p (44) deu 0.769 e 0.799 em jobs diferentes
   → variação entre jobs ~4% > ± do perf stat dentro de um job.
-- Robusto: 48 threads com dynamic é mau e instável (2.º job a confirmar; I/I1 = 8.44).
+- Robusto: 48 threads com dynamic é mau e instável (confirmado em 2 jobs; I/I1 = 8.44).
 
 ### Escalonamento (diagnóstico com schedule(runtime))
 Base: 24 thr — static,1 1.597 · dyn,1 1.598 · dyn,4 1.583 · dyn,16 1.577 · dyn,64 1.627 · guided 2.888
@@ -388,7 +390,7 @@ Native: 42 — static,1 0.812 · dyn,1 0.770 · dyn,16 0.825 · dyn,64 0.798
 - 42–46: sem vencedor consistente (ruído). guided mau (1.º bloco apanha as linhas pesadas).
 - 48: static,1 rápido e estável nos dois testes (base e native); dynamic instável.
 
-### Teste final lado a lado (final_compare.sh: intercalado, 10 rep., 2 nós, native)
+### Teste final lado a lado (final_compare.sh: intercalado, 10 rep., 2 nós, native, sem afinidade)
 | Candidato | Mediana A / B | Máx. A / B | Média das médias | Desvio A / B | > 0.85 s |
 |---|---|---|---|---|---|
 | 48:static,1 | 0.729 / 0.754 | 0.922 / 1.217 | 0.781 | 0.076 / 0.154 | 3/20 |
@@ -397,18 +399,19 @@ Native: 42 — static,1 0.812 · dyn,1 0.770 · dyn,16 0.825 · dyn,64 0.798
 | 44:dynamic,64 | 0.788 / 0.786 | 0.845 / 0.867 | 0.792 | 0.031 / 0.046 | 1/20 |
 | 44:dynamic,1 | 0.825 / 0.827 | 0.948 / 1.022 | 0.846 | 0.058 / 0.088 | 6/20 |
 | 48:dynamic,1 | 0.787 / 0.845 | 1.752 / 1.805 | 1.039 | 0.356 / 0.477 | 8/20 |
-- 48:dynamic,1 (= vec + Makefile anterior) é a pior: caudas até 1.8 s, 40% de execuções lentas.
+Nós: A = cna0397, B = cna0672.
+- 48:dynamic,1 (= v2_vec + Makefile anterior) é a pior: caudas até 1.8 s, 40% de execuções lentas.
 - Os 4 melhores empatam na média (0.781–0.792, Δ 1.4%, não significativo).
-- Diferença na distribuição: static,1/48 melhor mediana mas com caudas; dynamic,64/44 o mais estável.
-- Hipótese: dynamic,1 faz ~5000 operações atómicas por chamada (disputa a 48 thr); dynamic,64 ~79
+- static,1/48: melhor mediana mas com caudas; dynamic,64/44: o mais estável.
+- Interpretação: dynamic,1 faz ~5000 operações atómicas por chamada (disputa a 48 thr); dynamic,64 ~79
   (compensa atrasos com pouca disputa); static,1 sem coordenação, mas sem compensação de atrasos.
 
 ### Profiling
 - 1 thread (sem -fopenmp): computeAccelerations 99.92% → f = 0.9992.
   Amdahl: Smax(12) 11.90 · Smax(24) 23.57 · Smax(32) 31.23 · Smax(44) 42.5 · Smax(48) 46.3.
-  Medido native / Amdahl: 0.97 (12) · 0.92 (24) · 0.86 (32) · 0.76 (44) · 0.54 (48).
-- Observação: o perfil sem -fopenmp teve 87.5e9 ciclos (≈43.8 s) vs 34.5 s da versão OpenMP com 1 thread
-  → a confirmar (measure.sh sem -fopenmp); não afeta o strong scaling (baseline = T_omp(1)).
+  Medido native (sem afinidade) / Amdahl: 0.97 (12) · 0.92 (24) · 0.86 (32) · 0.76 (44) · 0.54 (48).
+- Observação: o perfil sem -fopenmp teve 87.5e9 ciclos (≈43.8 s) vs 34.5 s da versão OpenMP com 1 thread;
+  não afeta o strong scaling (baseline = T_omp(1)).
 - 48 threads (base): computeAccelerations 76.92% · mutex 7.85% · barreiras 11.42% · atómicas 2.83% ·
   gomp_iter_dynamic_next 0.19% → sincronização ≈ 22%.
   v1 a 48 thr: mutex 0.30% → a junção da reduction de a (com lock) passou a pesar porque o cálculo
@@ -420,42 +423,81 @@ Native: 42 — static,1 0.812 · dyn,1 0.770 · dyn,16 0.825 · dyn,64 0.798
   compila em GCC e Clang → código mais simples e portável. A avaliação usa só GCC 15.2.0 (ARM).
 - Correção: cada thread privatiza a[MAXPART][3] (5001 linhas) inicializado a 0; a linha extra a[5000]
   fica a 0 e não altera o resultado. Sem novas data races.
-- Custo: +1 linha em 5001 (≈0.02%) com N=5000 → desprezável. Com N=200 privatiza o array todo
-  (só afeta o tempo dos testes de correção, não as medições).
+- Custo: +1 linha em 5001 (≈0.02%) com N=5000; T(1) 24.730 s vs 24.898 / 24.877 s (−0.6%, ruído).
 
-### Decisão
-Escolha: 44 threads + schedule(dynamic,64)
+### Decisão de código e flags
+Escolha: schedule(dynamic,64) com 44 threads
 - Tempo esperado igual ao melhor (média 0.792 vs 0.781 s; Δ 1.4% não significativo).
 - Menor risco: 5% de execuções lentas (vs 15% do static,1/48); pior caso 0.87 s (vs 1.22 s).
 - dynamic,64: ~79 pedidos de trabalho por chamada (vs ~5000 com dynamic,1) → menos disputa,
   mantendo a compensação de threads atrasadas.
 - 44 threads: deixa 4 cores livres; a 48 thr a utilização caía para 85% e I/I1 subia para 7–8.
+Código: linha 482 → #pragma omp parallel for schedule(dynamic,64) reduction(+:a, Pot) → tag omp_final
+CFLAGS = -O3 -ffast-math -march=native -fopenmp
 
-Configuração final:
-- CFLAGS = -O3 -ffast-math -march=native -fopenmp
-- OMP_NUM_THREADS ?= 44
-- Código: schedule(dynamic,64) reduction(+:a, Pot) → tag omp_final
-
-### Verificação final (omp_final + Makefile final)
+### Verificação final sem afinidade (omp_final + Makefile com OMP_NUM_THREADS ?= 44)
 | Verificação | Script | Resultado |
 |---|---|---|
 | Vetorização do ciclo j (SVE) | vec_report.sh | linha 489: "loop vectorized using variable length vectors" ✓ |
 | Correção N=200, 1–48 thr × 3 rep. | validate_threads.sh | 22/22 OK, erro 0; sem -fopenmp vs seq_opt OK |
 | Correção N=5000 (12 p) | scaling.sh | 12/12 OK |
-| Scaling final (5 rep.) | scaling.sh | T(1) = 24.730 s · T(44) = 0.778 s · S(44) = 31.79 · E(44) = 0.72 |
-| make run (10×) | make_run.sh | mediana 0.8005 s · média 0.803 s · mín. 0.732 · máx. 0.896 · 1/10 > 0.85 s · validação OK |
-
+| Scaling (5 rep.) | scaling.sh | T(1) = 24.730 s · T(44) = 0.778 s · S(44) = 31.79 · E(44) = 0.72 |
+| make run (10×) | make_run.sh | mediana 0.8005 s · média 0.803 s · mín. 0.732 · máx. 0.896 · 1/10 > 0.85 s · OK |
 Compilação confirmada (build.txt): gcc -O3 -ffast-math -march=native -fopenmp src/MD.cpp -lm -o md
-OMP_NUM_THREADS no ambiente do job: não definido → o Makefile usa 44.
-make run ≈ +0.01–0.02 s face ao scaling (arranque do make).
-1.º make_run (11:54) correu com a configuração antiga (v2_vec com dynamic + 48 threads):
-0.844, 1.776, 1.808, 0.940, 0.783 → confirma as caudas de ~1.8 s do 48:dynamic,1.
-make_run.sh corrigido: apaga results/make_run no início e faz 10 execuções.
+- 1.º make_run (11:54) correu com a configuração anterior (v2_vec com dynamic + 48 threads):
+  0.844, 1.776, 1.808, 0.940, 0.783 → confirma as caudas de ~1.8 s do 48:dynamic,1.
+- make_run.sh corrigido: apaga results/make_run no início e faz 10 execuções.
 
-### Ganhos finais (tempo de referência = mediana do make run: 0.8005 s)
-- vs original (a): 325.24 / 0.8005 = 406×
-- vs seq_opt (c): 82.12 / 0.8005 = 103×
-- vs melhor v1 (3.655 s): 4.6×
-- Strong scaling (omp_final): S(44) = 31.79 · E(44) = 0.72 · Amdahl(44) = 42.5 (75% do limite)
+### Afinidade de threads (affinity_compare.sh: intercalado, 10 rep., 2 nós, omp_final, native)
+| Candidato | Mediana A / B | Máx. A / B | Desvio A / B | > 0.85 s | Migrações A / B | Trocas de contexto A / B |
+|---|---|---|---|---|---|---|
+| 44:close | 0.709 / 0.708 | 0.735 / 0.719 | 0.010 / 0.003 | 0/20 | 44 / 44 | 782 / 639 |
+| 44:spread | 0.707 / 0.708 | 0.747 / 0.727 | 0.013 / 0.006 | 0/20 | 44 / 44 | 737 / 647 |
+| 48:close | 0.733 / 0.733 | 0.737 / 0.771 | 0.002 / 0.012 | 0/20 | 48 / 48 | 8047 / 8390 |
+| 48:spread | 0.733 / 0.733 | 0.736 / 0.735 | 0.002 / 0.001 | 0/20 | 48 / 48 | 8110 / 8225 |
+| 44:none | 0.798 / 0.806 | 0.859 / 0.852 | 0.043 / 0.046 | 3/20 | 570 / 631 | 9271 / 21986 |
+| 48:none | 1.020 / 0.965 | 1.745 / 1.068 | 0.332 / 0.114 | 15/20 | 577 / 1208 | 18306 / 96666 |
+Nós: A = cna0604, B = cna1444. OMP_PLACES=cores nos candidatos close/spread. Validação OK em todos.
+- 44 threads, none → close: mediana −11.2% / −12.1%; máximo 0.86 → 0.72–0.74 s; lentas 3/20 → 0/20.
+- Com afinidade, migrações = nº de threads (1 por thread no arranque); sem afinidade, 570–1208.
+- Trocas de contexto a 44 thr: 12–34× menos com afinidade.
+- 48 thr com afinidade: ~8000 trocas de contexto (10× as de 44) → sem core livre, o sistema interrompe
+  threads de trabalho; 44 thr continua 3.5% mais rápido do que 48 (0.708 vs 0.733 s).
+- close ≈ spread (Δ 0.3%); escolhido close.
+
+### Configuração final com afinidade (pendente de confirmação dos professores)
+Makefile: OMP_NUM_THREADS ?= 44 · OMP_PROC_BIND ?= close · OMP_PLACES ?= cores
+(ambiente do job sem estas variáveis → valores do Makefile)
+
+make run (10×): 0.725, 0.721, 0.721, 0.722, 0.721, 0.722, 0.722, 0.725, 0.721, 0.750
+→ mediana 0.722 s · média 0.725 s · mín. 0.721 · máx. 0.750 · 0/10 > 0.85 s · validação OK
+
+Scaling final com afinidade (omp_final_bind, 5 rep., 12/12 OK):
+| p | 1 | 2 | 4 | 8 | 12 | 16 | 24 | 32 | 36 | 40 | 44 | 48 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| T (s) | 24.831 | 12.423 | 6.228 | 3.139 | 2.150 | 1.661 | 1.189 | 0.951 | 0.821 | 0.771 | 0.729 | 0.759 |
+| S | 1.00 | 2.00 | 3.99 | 7.91 | 11.55 | 14.95 | 20.89 | 26.12 | 30.24 | 32.21 | 34.06 | 32.71 |
+| E | 1.00 | 1.00 | 1.00 | 0.99 | 0.96 | 0.93 | 0.87 | 0.82 | 0.84 | 0.81 | 0.77 | 0.68 |
+| I/I1 | 1.00 | 1.00 | 1.01 | 1.04 | 1.21 | 1.45 | 1.82 | 2.31 | 2.06 | 2.35 | 2.71 | 3.44 |
+- Até 24 thr igual ao scaling sem afinidade; ganho a partir de 32 thr (−6.3% a 44, −9.6% a 48).
+- I/I1 a 44 thr: 3.36 → 2.71 (menos espera ativa).
+- S(44)/Amdahl(44) = 34.06 / 42.5 = 0.80 (sem afinidade: 0.75).
+- make_run.sh: faz também unset de OMP_PROC_BIND e OMP_PLACES antes do make run.
+
+### Ganhos finais
+| Comparação | Sem afinidade (make run 0.8005 s) | Com afinidade (make run 0.722 s) |
+|---|---|---|
+| vs original (a), 325.24 s | 406× | 450× |
+| vs seq_opt (c), 82.12 s | 103× | 114× |
+| vs melhor v1, 3.655 s | 4.6× | 5.1× |
+| Strong scaling a 44 thr | S 31.79 · E 0.72 · 75% de Amdahl | S 34.06 · E 0.77 · 80% de Amdahl |
+
+### Dados e gráficos
+- data/scaling_final_com_afinidade.csv · data/scaling_final_sem_afinidade.csv
+- data/scaling_final.csv = versão usada nos gráficos (atualmente: com afinidade)
+- data/scaling_v1.csv
+- figures/fig_speedup, fig_eficiencia, fig_versoes (scripts/plots.py)
+- Se a afinidade não for aprovada: retirar OMP_PROC_BIND/OMP_PLACES do Makefile, usar
+  scaling_final_sem_afinidade.csv e o tempo 0.8005 s no plots.py (configuração já verificada).
 
 ---
