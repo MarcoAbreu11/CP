@@ -14,5 +14,7 @@ clean:
 	rm -f ./md ./md_prof
 
 export OMP_NUM_THREADS ?= 44
+export OMP_PROC_BIND ?= close
+export OMP_PLACES ?= cores
 run: md
 	./md < inputdata.txt
