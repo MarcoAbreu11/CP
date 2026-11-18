@@ -13,7 +13,7 @@ OUT=results/make_run; W=tmp_makerun
 rm -rf $W $OUT; mkdir -p $W $OUT
 cp -r src Makefile inputdata.txt $W/
 cd $W
-echo "OMP_NUM_THREADS no ambiente do job: ${OMP_NUM_THREADS:-não definido}" > ../$OUT/info.txt
+echo "Ambiente do job: OMP_NUM_THREADS=${OMP_NUM_THREADS:-não definido} OMP_PROC_BIND=${OMP_PROC_BIND:-não definido} OMP_PLACES=${OMP_PLACES:-não definido}" > ../$OUT/info.txt
 unset OMP_NUM_THREADS                 # para o Makefile usar o seu valor (?=)
 make clean > /dev/null 2>&1
 make > ../$OUT/build.txt 2>&1
