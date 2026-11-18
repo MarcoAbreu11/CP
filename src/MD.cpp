@@ -476,20 +476,22 @@ void computeAccelerations() {
     }
 
     //  a[j] is written by several threads: each thread gets a private copy
-    //  of a (array reduction), summed at the end; Pot is a scalar reduction
-    #pragma omp parallel for schedule(static) reduction(+:a[0:N][0:3], Pot)
+    //  of a (array reduction), summed at the end; Pot is a scalar reduction.
+    //  Row i has N-1-i pairs (triangular loop): dynamic scheduling balances
+    //  the load, static would give the first thread ~2x the average work
+    #pragma omp parallel for schedule(dynamic) reduction(+:a[0:N][0:3], Pot)
     for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+        //  position of i and force on i kept in local variables: inside the
+        //  j loop the only memory writes are to a[j] (a different row in each
+        //  iteration), which allows the compiler to vectorize the j loop
+        double rix = r[i][0], riy = r[i][1], riz = r[i][2];
+        double aix = 0., aiy = 0., aiz = 0.;
         for (int j = i+1; j < N; j++) {
-            double rij[3]; // position of i relative to j
-            double rSqd = 0;
-            
-            for (int k = 0; k < 3; k++) {
-                //  component-by-componenent position of i relative to j
-                rij[k] = r[i][k] - r[j][k];
-                //  sum of squares of the components
-                rSqd += rij[k] * rij[k];
-            }
-            
+            //  position of i relative to j
+            double dx = rix - r[j][0];
+            double dy = riy - r[j][1];
+            double dz = riz - r[j][2];
+            double rSqd = dx*dx + dy*dy + dz*dz;
             //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
             //  24*(2*r^-14 - r^-8) with a single division: inv = 1/r^2, inv6 = r^-6
             double inv  = 1.0 / rSqd;
@@ -497,12 +499,17 @@ void computeAccelerations() {
             double f = 24 * inv * inv6 * (2*inv6 - 1);
             //  pair potential energy 4*(r^-12 - r^-6), reusing inv6
             Pot += 4*(inv6*inv6 - inv6);
-            for (int k = 0; k < 3; k++) {
-                //  from F = ma, where m = 1 in natural units!
-                a[i][k] += rij[k] * f;
-                a[j][k] -= rij[k] * f;
-            }
+            //  from F = ma, where m = 1 in natural units!
+            aix += dx * f;
+            aiy += dy * f;
+            aiz += dz * f;
+            a[j][0] -= dx * f;
+            a[j][1] -= dy * f;
+            a[j][2] -= dz * f;
         }
+        a[i][0] += aix;
+        a[i][1] += aiy;
+        a[i][2] += aiz;
     }
     //  each pair is visited once here, but the original definition sums
     //  over both (i,j) and (j,i), so the total is doubled
