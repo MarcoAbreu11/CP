@@ -31,7 +31,7 @@ VERSOES = [
     ("Original (a)\n1 thread",             325.24),   # results/perf_a.txt
     ("seq_opt (c)\n1 thread",               82.12),   # results/c/perf.txt
     ("OpenMP v1\n48 threads, static",        3.655),  # results/scaling_omp_v1/resumo.txt
-    ("Final\n44 threads, make run",          0.8005), # results/make_run/tempos.txt (mediana de 10)
+    ("Final\n44 threads, make run",          0.722), # results/make_run/tempos.txt (mediana de 10)
 ]
 
 # ---------------------------------------------------------------------------
@@ -109,7 +109,7 @@ def main():
     ax.plot(pref, pref, ls="--", lw=1.0, color=REF, label="Ideal (S = p)")
     ax.plot(pref, amdahl, ls=":", lw=1.2, color=REF, label=f"Amdahl (f = {F_AMDAHL})")
     ax.plot(pv, sv, marker="s", ms=4, color=C_V1, label="v1 (static)")
-    ax.plot(pf, sf, marker="o", ms=4, color=C_FINAL, label="Final (dynamic,64, SVE)")
+    ax.plot(pf, sf, marker="o", ms=4, color=C_FINAL, label="Final (dynamic,64, SVE, close)")
     i = pf.index(P_ESCOLHIDO)
     ax.annotate(f"{P_ESCOLHIDO} threads: S = {sf[i]:.1f}",
                 xy=(pf[i], sf[i]), xytext=(33, 24.5),
@@ -126,7 +126,7 @@ def main():
     # ------------------------------------------------------------- eficiência
     fig, ax = plt.subplots(figsize=(LARGURA, ALTURA))
     ax.plot(pv, effv1, marker="s", ms=4, color=C_V1, label="v1 (static)")
-    ax.plot(pf, effin, marker="o", ms=4, color=C_FINAL, label="Final (dynamic,64, SVE)")
+    ax.plot(pf, effin, marker="o", ms=4, color=C_FINAL, label="Final (dynamic,64, SVE, close)")
     ax.annotate(f"{P_ESCOLHIDO} threads: E = {effin[i]:.2f}",
                 xy=(pf[i], effin[i]), xytext=(29, 0.97),
                 fontsize=7, color=INK,

@@ -3,5 +3,6 @@
 /cp_*
 results/
 perf.data*
-scorep-*tmp_*/
+scorep-*
+tmp_*/
 versions/
