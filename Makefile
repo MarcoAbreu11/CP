@@ -13,6 +13,6 @@ prof: $(SRC)MD.cpp
 clean:
 	rm -f ./md ./md_prof
 
-export OMP_NUM_THREADS ?= 48
+export OMP_NUM_THREADS ?= 44
 run: md
 	./md < inputdata.txt
