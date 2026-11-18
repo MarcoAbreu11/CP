@@ -283,7 +283,7 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 
 ---
 
-## 10. OpenMP v2 (omp_v2_vec) e configuração final
+## 9. OpenMP v2 (omp_v2_vec) e configuração final
 
 ### Nomes
 - A nossa tag/pastas "omp_v2" = omp_v2_vec do Cláudio (dynamic + variáveis locais).
