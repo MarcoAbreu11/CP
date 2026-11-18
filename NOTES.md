@@ -282,3 +282,171 @@ reduction de Pot e desequilíbrio de carga do ciclo triangular (PL06).
 4. Ciclos O(N) < 0.1%: não prioritários.
 
 ---
+
+## 10. OpenMP v2 (omp_v2_vec) e configuração final
+
+### Nomes
+- A nossa tag/pastas "omp_v2" = omp_v2_vec do Cláudio (dynamic + variáveis locais).
+  Tag omp_v2_vec criada no mesmo commit.
+- O omp_v2 do Cláudio (só dynamic, sem variáveis locais) foi medido como
+  v1 + OMP_SCHEDULE=dynamic,1 (results/sched_omp_v1) e v1 com 1 thread (results/scaling_omp_v1).
+
+### Alterações (E2)
+- schedule(dynamic) (= dynamic,1) no ciclo de pares — escolhido com base no teste de escalonamento da v1.
+- Posição de i em variáveis locais (rix, riy, riz); força sobre i acumulada em aix, aiy, aiz e escrita
+  em a[i] uma vez por linha → dentro do ciclo j só há escritas em a[j] (+ Pot) → permite vetorizar.
+
+### Revisão E1
+- Sem data races: variáveis locais privadas; a[] e Pot com reduction.
+- Equivalente à v1, a menos da ordem das somas.
+
+### Vetorização (scripts/vec_report.sh, GCC 15.2.0 no nó ARM, -fopt-info-vec-optimized)
+- -O3 -ffast-math: linha 489 (ciclo j) "loop vectorized using 16 byte vectors" → NEON, 2 doubles/instrução.
+- + -march=native: linha 489 "loop vectorized using variable length vectors" → SVE, 8 doubles no A64FX.
+- v1: ciclo j não vetorizado ("complicated access pattern" na escrita em a[i], segundo o E2).
+
+### Validação
+- Sem -fopenmp vs seq_opt: idêntico (P 6e-15, informativo).
+- N=200, 1–48 threads × 3 rep., base e native: 44/44 OK, erro 0.
+- N=5000, scaling 12 p × base e native: 24/24 OK.
+- Afinamento, escalonamentos e teste final: todos OK.
+
+### omp_v2 (só dynamic) vs omp_v2_vec (pedido do E2)
+| Threads | omp_v2 base | vec base (NEON) | vec native (SVE) | vec base / v2 | vec native / v2 |
+|---|---|---|---|---|---|
+| 1 | 82.157 s | 34.539 s | 24.898 s | 2.38× | 3.30× |
+| 12 | 6.969 s | 2.988 s | 2.149 s | 2.33× | 3.24× |
+| 48 | 2.053 s | 1.151 s | 0.988 s | 1.78× | 2.08× |
+- Jobs diferentes (variação entre jobs ~4%), irrelevante face a 1.8–3.3×.
+- omp_v2 + native não medido: ciclo não vetorizado; native foi pior nas versões não vetorizadas (seq_opt, v1).
+- Conclusão: a vec fica.
+
+### Scaling (scaling.sh, N=5000, 5 rep., código omp_v2_vec com schedule(dynamic))
+| p | T base (s) | S | E | I/I1 | T native (s) | S | E | I/I1 |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 34.539 | 1.00 | 1.00 | 1.00 | 24.898 | 1.00 | 1.00 | 1.00 |
+| 2 | 17.337 | 1.99 | 1.00 | 1.00 | 12.528 | 1.99 | 0.99 | 1.01 |
+| 4 | 8.722 | 3.96 | 0.99 | 1.01 | 6.299 | 3.95 | 0.99 | 1.03 |
+| 8 | 4.406 | 7.84 | 0.98 | 1.05 | 3.192 | 7.80 | 0.97 | 1.08 |
+| 12 | 2.988 | 11.56 | 0.96 | 1.09 | 2.149 | 11.59 | 0.97 | 1.15 |
+| 16 | 2.274 | 15.19 | 0.95 | 1.15 | 1.643 | 15.16 | 0.95 | 1.25 |
+| 24 | 1.619 | 21.33 | 0.89 | 1.37 | 1.145 | 21.75 | 0.91 | 1.52 |
+| 32 | 1.305 | 26.46 | 0.83 | 1.61 | 0.931 | 26.75 | 0.84 | 2.06 |
+| 36 | 1.196 | 28.87 | 0.80 | 1.74 | 0.878 | 28.37 | 0.79 | 2.47 |
+| 40 | 1.154 | 29.92 | 0.75 | 1.94 | 0.828 | 30.07 | 0.75 | 2.86 |
+| 44 | 1.106 | 31.23 | 0.71 | 2.18 | 0.769 | 32.36 | 0.74 | 2.98 |
+| 48 | 1.151 | 30.02 | 0.63 | 2.79 | 0.988 | 25.20 | 0.53 | 7.04 |
+- Native ~1.4× mais rápida em todos os p (SVE). Inverte a decisão da Fase 3 (sem vetorização não ajudava).
+- E ≥ 0.95 até 16 threads: o dynamic eliminou o desequilíbrio da v1 (v1: E 0.52 a 12 thr).
+- Erros a 48 threads muito maiores (±0.097 base, ±0.196 native) do que a 44 (±0.025 / ±0.014).
+
+### Equação de desempenho (1 thread; Texe = #I × CPI × Tcc)
+| | #I | ciclos | CPI | T (s) |
+|---|---|---|---|---|
+| seq_opt (c) | 101.1e9 | 164.2e9 | 1.62 | 82.12 |
+| vec base (NEON) | 35.57e9 | 69.05e9 | 1.94 | 34.54 |
+| vec native (SVE) | 11.24e9 | 49.70e9 | 4.42 | 24.90 |
+- seq_opt → vec base: #I 2.84× menos × CPI 0.84 = 2.38×.
+- base → native: #I 3.17× menos × CPI 0.44 = 1.39× (SVE: 8 doubles/instrução, mas instruções mais caras:
+  divisão vetorial, acessos espalhados a a[j]).
+- Custo por par (2 524 495 000 pares): base 13.7 ns (27 ciclos), native 9.9 ns (20 ciclos)
+  vs seq_opt 32.5 ns e original 43.1 ns.
+
+### Significância (diferença > soma dos erros)
+- native 44 vs 40: 0.059 s > 0.019 → significativo.
+- native 44 vs 48: 0.219 s vs 0.210 → no limite; erro a 48 = ±0.196 s (≈20%) vs ±0.014 s a 44 (≈1.8%).
+- native vs base a 44: 0.336 s ≫ 0.039 → 1.44× (significativo).
+
+### Decomposição da eficiência: E(p) = [C(1)/C(p)] × [C(p)/(p·T·2 GHz)]
+(C = ciclos totais de todas as threads; 1.º fator = trabalho extra; 2.º = utilização)
+| | C1/Cp | U | E calc. | E medido |
+|---|---|---|---|---|
+| native 24 | 0.932 | 0.971 | 0.905 | 0.91 |
+| native 44 | 0.793 | 0.926 | 0.734 | 0.74 |
+| native 48 | 0.614 | 0.853 | 0.524 | 0.53 |
+| base 44 | 0.772 | 0.919 | 0.709 | 0.71 |
+| base 48 | 0.699 | 0.894 | 0.625 | 0.63 |
+- 44 thr: perda sobretudo por ciclos extra de sincronização (~21%), pouca inatividade (~7%).
+- 48 thr: ciclos extra 39% (instruções 33.5e9 → 79.1e9: espera ativa) + utilização 85%.
+
+### Afinamento do número de threads (native, 5 rep., outro job)
+| p | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47 | 48 |
+|---|---|---|---|---|---|---|---|---|---|
+| T (s) | 0.834 | 0.795 | 0.845 | 0.763 | 0.799 | 0.751 | 0.774 | 0.800 | 1.075 |
+| ± | 0.024 | 0.012 | 0.024 | 0.017 | 0.026 | 0.008 | 0.030 | 0.035 | 0.211 |
+- Entre 40 e 47: curva sem padrão → ruído. O mesmo p (44) deu 0.769 e 0.799 em jobs diferentes
+  → variação entre jobs ~4% > ± do perf stat dentro de um job.
+- Robusto: 48 threads com dynamic é mau e instável (2.º job a confirmar; I/I1 = 8.44).
+
+### Escalonamento (diagnóstico com schedule(runtime))
+Base: 24 thr — static,1 1.597 · dyn,1 1.598 · dyn,4 1.583 · dyn,16 1.577 · dyn,64 1.627 · guided 2.888
+      48 thr — static,1 1.052 · dyn,1 1.132 · dyn,4 1.158 · dyn,16 1.121 · dyn,64 1.112 · guided 1.650
+Native: 42 — static,1 0.812 · dyn,1 0.770 · dyn,16 0.825 · dyn,64 0.798
+        44 — static,1 0.825 · dyn,1 0.768 · dyn,16 0.800 · dyn,64 0.763
+        46 — static,1 0.737 · dyn,1 0.774 · dyn,16 0.730 · dyn,64 0.892
+        48 — static,1 0.741 · dyn,1 0.911 (±0.136) · dyn,16 0.766 · dyn,64 1.019 (±0.137)
+- 42–46: sem vencedor consistente (ruído). guided mau (1.º bloco apanha as linhas pesadas).
+- 48: static,1 rápido e estável nos dois testes (base e native); dynamic instável.
+
+### Teste final lado a lado (final_compare.sh: intercalado, 10 rep., 2 nós, native)
+| Candidato | Mediana A / B | Máx. A / B | Média das médias | Desvio A / B | > 0.85 s |
+|---|---|---|---|---|---|
+| 48:static,1 | 0.729 / 0.754 | 0.922 / 1.217 | 0.781 | 0.076 / 0.154 | 3/20 |
+| 45:dynamic,1 | 0.800 / 0.743 | 0.942 / 0.841 | 0.790 | 0.073 / 0.042 | 4/20 |
+| 46:static,1 | 0.740 / 0.809 | 0.951 / 0.946 | 0.791 | 0.078 / 0.061 | 3/20 |
+| 44:dynamic,64 | 0.788 / 0.786 | 0.845 / 0.867 | 0.792 | 0.031 / 0.046 | 1/20 |
+| 44:dynamic,1 | 0.825 / 0.827 | 0.948 / 1.022 | 0.846 | 0.058 / 0.088 | 6/20 |
+| 48:dynamic,1 | 0.787 / 0.845 | 1.752 / 1.805 | 1.039 | 0.356 / 0.477 | 8/20 |
+- 48:dynamic,1 (= vec + Makefile anterior) é a pior: caudas até 1.8 s, 40% de execuções lentas.
+- Os 4 melhores empatam na média (0.781–0.792, Δ 1.4%, não significativo).
+- Diferença na distribuição: static,1/48 melhor mediana mas com caudas; dynamic,64/44 o mais estável.
+- Hipótese: dynamic,1 faz ~5000 operações atómicas por chamada (disputa a 48 thr); dynamic,64 ~79
+  (compensa atrasos com pouca disputa); static,1 sem coordenação, mas sem compensação de atrasos.
+
+### Profiling
+- 1 thread (sem -fopenmp): computeAccelerations 99.92% → f = 0.9992.
+  Amdahl: Smax(12) 11.90 · Smax(24) 23.57 · Smax(32) 31.23 · Smax(44) 42.5 · Smax(48) 46.3.
+  Medido native / Amdahl: 0.97 (12) · 0.92 (24) · 0.86 (32) · 0.76 (44) · 0.54 (48).
+- Observação: o perfil sem -fopenmp teve 87.5e9 ciclos (≈43.8 s) vs 34.5 s da versão OpenMP com 1 thread
+  → a confirmar (measure.sh sem -fopenmp); não afeta o strong scaling (baseline = T_omp(1)).
+- 48 threads (base): computeAccelerations 76.92% · mutex 7.85% · barreiras 11.42% · atómicas 2.83% ·
+  gomp_iter_dynamic_next 0.19% → sincronização ≈ 22%.
+  v1 a 48 thr: mutex 0.30% → a junção da reduction de a (com lock) passou a pesar porque o cálculo
+  ficou ~3× mais rápido.
+
+### Ajuste de portabilidade
+- reduction(+:a[0:N][0:3], Pot) → reduction(+:a, Pot).
+- Motivo: a secção de array 2D de tamanho variável dá erro no Clang 18 (Windows); o array completo
+  compila em GCC e Clang → código mais simples e portável. A avaliação usa só GCC 15.2.0 (ARM).
+- Correção: cada thread privatiza a[MAXPART][3] (5001 linhas) inicializado a 0; a linha extra a[5000]
+  fica a 0 e não altera o resultado. Sem novas data races.
+- Custo: +1 linha em 5001 (≈0.02%) com N=5000 → desprezável. Com N=200 privatiza o array todo
+  (só afeta o tempo dos testes de correção, não as medições).
+
+### Decisão
+Escolha: 44 threads + schedule(dynamic,64)
+- Tempo esperado igual ao melhor (média 0.792 vs 0.781 s; Δ 1.4% não significativo).
+- Menor risco: 5% de execuções lentas (vs 15% do static,1/48); pior caso 0.87 s (vs 1.22 s).
+- dynamic,64: ~79 pedidos de trabalho por chamada (vs ~5000 com dynamic,1) → menos disputa,
+  mantendo a compensação de threads atrasadas.
+- 44 threads: deixa 4 cores livres; a 48 thr a utilização caía para 85% e I/I1 subia para 7–8.
+
+Configuração final:
+- CFLAGS = -O3 -ffast-math -march=native -fopenmp
+- OMP_NUM_THREADS ?= 44
+- Código: schedule(dynamic,64) reduction(+:a, Pot) → tag omp_final
+
+### Verificação final (omp_final + Makefile final) — a preencher
+| Verificação | Script | Resultado |
+|---|---|---|
+| Vetorização do ciclo j (SVE) | vec_report.sh | |
+| Correção N=200, 1–48 thr × 3 rep. | validate_threads.sh | |
+| Correção N=5000 + scaling final (5 rep.) | scaling.sh | |
+| make run (5×), condições de avaliação | make_run.sh | tempos: … · validação: … |
+
+### Ganhos (com o tempo final do make run a confirmar)
+- vs original (a): 325.24 / … ≈ …× (referência: 0.79 s → ≈ 410×)
+- vs seq_opt (c): 82.12 / … ≈ …× (referência: 0.79 s → ≈ 104×)
+- Melhor v1 (3.655 s) → final: ≈ …× (referência: 0.79 s → ≈ 4.6×)
+
+---
