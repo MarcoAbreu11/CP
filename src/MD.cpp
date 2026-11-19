@@ -477,8 +477,8 @@ void computeAccelerations() {
 
     //  a[j] is written by several threads: each thread gets a private copy
     //  of a (array reduction), summed at the end; Pot is a scalar reduction.
-    //  The whole array is reduced: the section form a[0:N][0:3] gave wrong
-    //  results with Clang 18 (GCC was correct), and a has MAXPART ~ N rows.
+    //  Reducing the whole array keeps the clause simple and adds just
+    //  one row to each private copy for N = 5000
     //  Row i has N-1-i pairs (triangular loop): dynamic scheduling balances
     //  the load (static would give the first thread ~2x the average work);
     //  chunks of 64 rows cut scheduling requests from ~5000 to ~79 per call
